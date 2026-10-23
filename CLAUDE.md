@@ -14,7 +14,7 @@ index.html      目錄頁，一頁一行連結
 house-2f/       一頁一個子資料夾：index.html＋它要用的檔案（glb、圖片…）
 ```
 
-只放「做好的成品」。原始檔、產生成品的腳本留在各自的專案，例如 house-2f 的來源是 `~/Documents/sketchup/house/render/web/`，由 `render_night.py -- web 2F` 產出。
+只放「做好的成品」。原始檔、產生成品的腳本留在各自的專案，例如 house-2f 的來源是 `~/Documents/sketchup/house/render/web/`，由 `render_light.py -- web 2F` 產出。
 
 ## 新增或更新一頁
 

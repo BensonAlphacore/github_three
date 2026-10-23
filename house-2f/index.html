@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>2F 夜景導覽</title>
+<title>2F 室內燈光</title>
 <style>
-/* 版面：整頁就是 3D 夜景，左上一塊操作面板，右下一行按鍵提示 */
+/* 版面：整頁就是 3D 室內場景，左上一塊操作面板，右下一行按鍵提示 */
 :root {
-  --bg: #0c1018;          /* 夜景底色，跟 Blender 的夜空同色系 */
+  --bg: #141414;          /* 中性深灰，不搶燈光的顏色 */
   --panel: rgba(250, 248, 243, 0.92);
   --ink: #23211d;
   --muted: #6d675d;
@@ -89,11 +89,11 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f
 <body>
 
 
-<canvas id="stage" tabindex="0" aria-label="2F 夜景 3D 導覽，點一下後可用方向鍵移動"></canvas>
+<canvas id="stage" tabindex="0" aria-label="2F 室內燈光 3D 導覽，點一下後可用方向鍵移動"></canvas>
 <div id="status">載入模型中…</div>
 
 <section class="panel" aria-label="導覽控制">
-  <h1>2F 夜景導覽<small>Cycles 烤光 · 3000K 嵌燈 · 1501 白牆 · 灰木紋磚</small></h1>
+  <h1>2F 室內燈光<small>Blender Cycles 烘光 · 3000K 嵌燈 · 1501 白牆 · 灰木紋磚</small></h1>
   <div class="modes" role="group" aria-label="導覽模式">
     <button id="m-orbit" type="button" aria-pressed="true">俯瞰</button>
     <button id="m-walk" type="button" aria-pressed="false">走進去</button>
@@ -146,7 +146,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;   // 光已經在 Blender 用 AgX 處理過
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0c1018);
+scene.background = new THREE.Color(0x141414);
 const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 200);
 
 const composer = new EffectComposer(renderer);
@@ -160,7 +160,7 @@ orbit.enableDamping = true;
 orbit.maxPolarAngle = Math.PI * 0.49;
 
 // 外面一塊深色地面，模型周圍不會懸空
-const ground = new THREE.Mesh(new THREE.CircleGeometry(60, 48), new THREE.MeshBasicMaterial({ color: 0x07090d }));
+const ground = new THREE.Mesh(new THREE.CircleGeometry(60, 48), new THREE.MeshBasicMaterial({ color: 0x0b0b0b }));
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.2;
 scene.add(ground);
