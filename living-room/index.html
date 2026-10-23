@@ -106,6 +106,9 @@
   .mouse-labels b { color: var(--fg); font-weight: 600; margin-right: 4px; }
   .mouse-labels span.down b { color: var(--accent); }
   .kh-foot { font-size: 11px; color: var(--muted); text-align: center; }
+  .eye { cursor: default; }
+  .row input[type="range"] { flex: 1; width: auto; height: auto; min-width: 0; }
+  .eye output { font-family: var(--font-mono); font-size: 12px; min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
   .linkbtn { justify-self: start; border: 0; background: none; padding: 0; color: var(--accent); font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   @media (prefers-reduced-motion: reduce) { .keyhint, .key kbd { transition: none; } }
 </style>
@@ -139,6 +142,10 @@
       <div class="kh-row">
         <div class="key" data-k="r"><kbd>R</kbd><span>升高</span></div>
         <div class="key" data-k="f"><kbd>F</kbd><span>降低</span></div>
+      </div>
+      <div class="kh-row">
+        <div class="key" data-k="t"><kbd>T</kbd><span>抬頭</span></div>
+        <div class="key" data-k="g"><kbd>G</kbd><span>低頭</span></div>
       </div>
       <div class="kh-row"><div class="key" data-k="shift"><kbd>Shift</kbd><span>按住加速</span></div></div>
     </div>
@@ -181,7 +188,8 @@
   </div>
   <label class="row"><input id="cutaway" type="checkbox" checked> 擋住視線的牆自動隱藏</label>
   <button id="btn-reset" class="reset" type="button">回到預設視角</button>
-  <p class="hint" id="hint">拖曳旋轉、滾輪縮放、右鍵平移，可以縮進房間裡面看。鍵盤 WASD 走動、方向鍵轉向。</p>
+  <label class="row eye" for="eye">視線高度 <input id="eye" type="range" min="0.8" max="2.2" step="0.05" value="1.6"> <output id="eye-val" for="eye">1.60 m</output></label>
+  <p class="hint" id="hint">拖曳旋轉、滾輪縮放、右鍵平移，可以縮進房間裡面看。鍵盤 WASD 走動、方向鍵轉向、T／G 抬頭低頭。</p>
   <button id="kh-show" class="linkbtn" type="button">顯示操作說明</button>
   </div>
 </div>
@@ -625,9 +633,10 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 });
 
 // ---------- 鍵盤走動：WASD 移動、方向鍵／QE 轉向、RF 升降、Shift 加速 ----------
-const KB = { speed: 1.6, turn: 1.7 };
+const PITCH_MAX = Math.PI / 3;   // 抬頭低頭最多 60°
+const KB = { pitch: 0.8, speed: 1.6, turn: 1.7 };
 const held = new Set();
-const MOVE_CODES = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'KeyR', 'KeyF', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
+const MOVE_CODES = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'KeyR', 'KeyF', 'KeyT', 'KeyG', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
 addEventListener('keydown', e => {
   if (!MOVE_CODES.has(e.code) || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target.closest && e.target.closest('input, textarea, select')) return;
@@ -684,11 +693,44 @@ function keyboardMove() {
     controls.target.copy(camera.position).add(off);
     moved = true;
   }
+  const look = (h('KeyT') ? 1 : 0) - (h('KeyG') ? 1 : 0);
+  if (look) {
+    const off = controls.target.clone().sub(camera.position);
+    const len = off.length();
+    kbTry.set(off.x, 0, off.z);
+    if (kbTry.lengthSq() < 1e-8) kbTry.set(0, 0, -1).applyQuaternion(camera.quaternion).setY(0);
+    kbTry.normalize();
+    const ang = Math.atan2(off.y, Math.hypot(off.x, off.z));
+    // 一開始就超過 60° 的視角（例如鳥瞰）不會被硬拉回來，只是不能再往外轉
+    const next = Math.min(Math.max(ang + look * KB.pitch * dt, Math.min(-PITCH_MAX, ang)), Math.max(PITCH_MAX, ang));
+    controls.target.copy(camera.position).addScaledVector(kbTry, Math.cos(next) * len);
+    controls.target.y += Math.sin(next) * len;
+    moved = true;
+  }
   if (moved && !(h('KeyR') || h('KeyF'))) followGround(dt);
   return moved;
 }
 const kbRay = new THREE.Raycaster(), kbDown = new THREE.Vector3(0, -1, 0), kbOrigin = new THREE.Vector3();
-const EYE = 1.65;
+let EYE = 1.6;               // 視線離地高度，控制卡的滑桿可以調
+{
+  const eyeInput = document.getElementById('eye'), eyeOut = document.getElementById('eye-val');
+  try {
+    const v = parseFloat(localStorage.getItem('eye-height'));
+    if (v >= 0.8 && v <= 2.2) EYE = v;
+  } catch (e) { /* 讀不到就用預設 */ }
+  eyeInput.value = EYE;
+  eyeOut.textContent = EYE.toFixed(2) + ' m';
+  eyeInput.addEventListener('input', () => {
+    const prev = EYE;
+    EYE = parseFloat(eyeInput.value);
+    eyeOut.textContent = EYE.toFixed(2) + ' m';
+    try { localStorage.setItem('eye-height', String(EYE)); } catch (e) { /* 記不住也沒關係 */ }
+    if (groundBelow() !== null) {          // 站在地上就立刻換成新的高度
+      camera.position.y += EYE - prev;
+      controls.target.y += EYE - prev;
+    }
+  });
+}
 // 腳下 2.8 m 內可以踩的面高度；沒有就回傳 null（代表在飛或腳下是空的）
 function groundBelow() {
   if (!walkables.length) return null;
@@ -772,7 +814,7 @@ renderer.setAnimationLoop(() => {
     const showBtn = document.getElementById('kh-show');
     const touchOnly = matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches;
     if (touchOnly || location.search.includes('rec')) { showBtn.hidden = true; return; }
-    const MAP = { KeyW: 'w', KeyA: 'a', KeyS: 's', KeyD: 'd', KeyQ: 'q', KeyE: 'e', KeyR: 'r', KeyF: 'f',
+    const MAP = { KeyW: 'w', KeyA: 'a', KeyS: 's', KeyD: 'd', KeyQ: 'q', KeyE: 'e', KeyR: 'r', KeyF: 'f', KeyT: 't', KeyG: 'g',
       ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ShiftLeft: 'shift', ShiftRight: 'shift' };
     let timer = null;
     function hide() {
