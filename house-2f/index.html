@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2F 夜景導覽</title>
+<style>
+/* 版面：整頁就是 3D 夜景，左上一塊操作面板，右下一行按鍵提示 */
+:root {
+  --bg: #0c1018;          /* 夜景底色，跟 Blender 的夜空同色系 */
+  --panel: rgba(250, 248, 243, 0.92);
+  --ink: #23211d;
+  --muted: #6d675d;
+  --line: rgba(35, 33, 29, 0.14);
+  --accent: #b9874a;      /* 3000K 燈光的暖金 */
+  --accent-ink: #fffaf2;
+  --font-ui: "Noto Sans TC", "PingFang TC", "Heiti TC", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --panel: rgba(24, 24, 27, 0.9);
+    --ink: #eeeae2;
+    --muted: #a39d92;
+    --line: rgba(238, 234, 226, 0.14);
+    --accent: #d6a463;
+    --accent-ink: #1a140c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --panel: rgba(24, 24, 27, 0.9);
+  --ink: #eeeae2;
+  --muted: #a39d92;
+  --line: rgba(238, 234, 226, 0.14);
+  --accent: #d6a463;
+  --accent-ink: #1a140c;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); overflow: hidden; }
+#stage { position: fixed; inset: 0; display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+.panel {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  width: min(300px, calc(100% - 32px));
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 12px;
+}
+.panel h1 { margin: 0; font-size: 17px; font-weight: 600; text-wrap: balance; }
+.panel h1 small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--muted); }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.modes button {
+  font: inherit; font-size: 13px; padding: 8px 10px; border-radius: 7px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+}
+.modes button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.modes button:focus-visible, #ceil:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.keys { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 10px; font-size: 12.5px; color: var(--muted); }
+.keys dt { color: var(--ink); font-family: var(--font-num); font-size: 12px; white-space: nowrap; }
+.keys dd { margin: 0; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.row label { display: flex; align-items: center; gap: 6px; color: var(--ink); cursor: pointer; }
+.spec { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 11.5px; color: var(--muted); line-height: 1.5; border-top: 1px solid var(--line); padding-top: 8px; }
+#status {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  color: #e9e2d4; font-size: 14px; text-align: center; padding-inline: 16px;
+}
+#hud {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  color: rgba(233, 226, 212, 0.75); font-size: 12px; font-family: var(--font-num); text-align: right;
+}
+@media (max-width: 520px) {
+  .keys { display: none; }
+  .panel { gap: 10px; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap">
+</head>
+<body>
+
+
+<canvas id="stage" tabindex="0" aria-label="2F 夜景 3D 導覽，點一下後可用方向鍵移動"></canvas>
+<div id="status">載入模型中…</div>
+
+<section class="panel" aria-label="導覽控制">
+  <h1>2F 夜景導覽<small>Cycles 烤光 · 3000K 嵌燈 · 1501 白牆 · 灰木紋磚</small></h1>
+  <div class="modes" role="group" aria-label="導覽模式">
+    <button id="m-orbit" type="button" aria-pressed="true">俯瞰</button>
+    <button id="m-walk" type="button" aria-pressed="false">走進去</button>
+  </div>
+  <dl class="keys" id="keys-orbit">
+    <dt>滑鼠左鍵拖曳</dt><dd>轉視角</dd>
+    <dt>右鍵拖曳</dt><dd>平移</dd>
+    <dt>滾輪</dt><dd>拉近、拉遠</dd>
+    <dt>← → ↑ ↓</dt><dd>轉、俯仰</dd>
+    <dt>雙擊地板</dt><dd>從那裡走進去</dd>
+  </dl>
+  <dl class="keys" id="keys-walk" hidden>
+    <dt>↑ ↓ ／ W S</dt><dd>前進、後退</dd>
+    <dt>← → ／ A D</dt><dd>左轉、右轉</dd>
+    <dt>Shift</dt><dd>走快一點</dd>
+    <dt>滑鼠拖曳</dt><dd>四處看</dd>
+    <dt>滾輪</dt><dd>往前、往後走</dd>
+  </dl>
+  <div class="row">
+    <label for="ceil"><input id="ceil" type="checkbox"> 顯示天花板</label>
+    <span>V 切換模式</span>
+  </div>
+  <div class="spec" id="spec">模型：平配圖 2F（靠下那份）</div>
+</section>
+<div id="hud" aria-live="polite"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const EYE = 1.55;          // 走進去時的眼睛高度（公尺）
+const RADIUS = 0.3;        // 跟牆保持的距離
+const canvas = document.getElementById('stage');
+const status = document.getElementById('status');
+const hud = document.getElementById('hud');
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;   // 光已經在 Blender 用 AgX 處理過
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0c1018);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 200);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.45, 0.9);  // 只讓燈面這種很亮的地方暈開
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+const orbit = new OrbitControls(camera, canvas);
+orbit.enableDamping = true;
+orbit.maxPolarAngle = Math.PI * 0.49;
+
+// 外面一塊深色地面，模型周圍不會懸空
+const ground = new THREE.Mesh(new THREE.CircleGeometry(60, 48), new THREE.MeshBasicMaterial({ color: 0x07090d }));
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.2;
+scene.add(ground);
+
+let house, ceiling, floorMesh, solids = [];
+const box = new THREE.Box3();
+const ray = new THREE.Raycaster();
+
+new GLTFLoader().load('2F.glb', gltf => {
+  const root = gltf.scene;
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    const src = o.material;
+    const name = (o.name || '') + '|' + (src.name || '');
+    if (/玻璃/.test(name)) {
+      o.material = new THREE.MeshBasicMaterial({ color: 0x9fb6bd, transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide });
+      solids.push(o);
+      return;
+    }
+    const map = src.emissiveMap || src.map;
+    if (map) map.colorSpace = THREE.SRGBColorSpace;
+    o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide });
+    if (/天花板/.test(name)) ceiling = o;
+    else if (/地板/.test(name)) floorMesh = o;
+    solids.push(o);
+  });
+  scene.add(root);
+  house = root;
+  box.setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  document.getElementById('spec').textContent =
+    `模型：平配圖 2F（靠下那份）\n範圍 ${size.x.toFixed(1)} × ${size.z.toFixed(1)} m · 天花板 ${(box.max.y).toFixed(2)} m`;
+  document.getElementById('spec').style.whiteSpace = 'pre-line';
+  status.hidden = true;
+  setOrbit();
+  setCeiling(false);
+}, xhr => {
+  if (xhr.total) status.textContent = `載入模型中… ${Math.round(xhr.loaded / xhr.total * 100)}%`;
+}, () => { status.textContent = '模型載入失敗：請重新整理頁面再試一次'; });
+
+// ---------- 模式 ----------
+let mode = 'orbit';
+const yawPitch = { yaw: 0, pitch: -0.05 };
+function setCeiling(on) {
+  document.getElementById('ceil').checked = on;
+  if (ceiling) ceiling.visible = on;
+}
+function setOrbit() {
+  mode = 'orbit';
+  document.getElementById('m-orbit').setAttribute('aria-pressed', 'true');
+  document.getElementById('m-walk').setAttribute('aria-pressed', 'false');
+  document.getElementById('keys-orbit').hidden = false;
+  document.getElementById('keys-walk').hidden = true;
+  const c = box.getCenter(new THREE.Vector3());
+  const s = box.getSize(new THREE.Vector3());
+  orbit.enabled = true;
+  orbit.target.set(c.x, 0.4, c.z);
+  camera.fov = 45;
+  camera.position.set(c.x - s.x * 1.1, s.z * 0.95, c.z + s.z * 0.75);
+  camera.updateProjectionMatrix();
+  setCeiling(false);
+  orbit.update();
+}
+function setWalk(at) {
+  mode = 'walk';
+  document.getElementById('m-orbit').setAttribute('aria-pressed', 'false');
+  document.getElementById('m-walk').setAttribute('aria-pressed', 'true');
+  document.getElementById('keys-orbit').hidden = true;
+  document.getElementById('keys-walk').hidden = false;
+  orbit.enabled = false;
+  camera.fov = 70;
+  camera.updateProjectionMatrix();
+  const p = at || bestSpot();
+  camera.position.set(p.x, box.min.y + EYE, p.z);
+  yawPitch.yaw = p.yaw ?? 0;
+  yawPitch.pitch = -0.05;
+  applyLook();
+  setCeiling(true);
+  canvas.focus();
+}
+// 自動挑一個視野最開闊的站點：地板上每 0.5m 試站，往 16 個方向量到牆的距離
+function bestSpot() {
+  let best = null;
+  const y = box.min.y + EYE;
+  for (let x = box.min.x + 0.6; x < box.max.x - 0.6; x += 0.5) {
+    for (let z = box.min.z + 0.6; z < box.max.z - 0.6; z += 0.5) {
+      const o = new THREE.Vector3(x, y, z);
+      if (!onFloor(o)) continue;
+      let near = Infinity, sum = 0, far = 0, farYaw = 0;
+      for (let k = 0; k < 16; k++) {
+        const a = k / 16 * Math.PI * 2;
+        const d = new THREE.Vector3(-Math.sin(a), 0, -Math.cos(a));
+        ray.set(o, d); ray.far = 15;
+        const h = ray.intersectObjects(solids, false)[0];
+        const dist = h ? h.distance : 0;
+        near = Math.min(near, dist); sum += dist;
+        if (dist > far) { far = dist; farYaw = a; }
+      }
+      const score = near > 0.6 ? sum / 16 + far * 0.5 : -1;
+      if (!best || score > best.score) best = { score, x, z, yaw: farYaw };
+    }
+  }
+  return best || { x: (box.min.x + box.max.x) / 2, z: (box.min.z + box.max.z) / 2, yaw: 0 };
+}
+function onFloor(p) {
+  if (!floorMesh) return true;
+  ray.set(new THREE.Vector3(p.x, box.max.y - 0.05, p.z), new THREE.Vector3(0, -1, 0)); ray.far = 5;
+  const h = ray.intersectObjects(solids.filter(o => o !== ceiling), false)[0];
+  return !!h && h.object === floorMesh;
+}
+function applyLook() {
+  camera.rotation.set(0, 0, 0, 'YXZ');
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = yawPitch.yaw;
+  camera.rotation.x = yawPitch.pitch;
+}
+
+document.getElementById('m-orbit').addEventListener('click', setOrbit);
+document.getElementById('m-walk').addEventListener('click', () => setWalk());
+document.getElementById('ceil').addEventListener('change', e => setCeiling(e.target.checked));
+
+// 俯瞰時雙擊地板 → 從那裡走進去
+canvas.addEventListener('dblclick', e => {
+  if (mode !== 'orbit' || !floorMesh) return;
+  const r = canvas.getBoundingClientRect();
+  const ndc = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(ndc, camera); ray.far = 200;
+  const h = ray.intersectObject(floorMesh, false)[0];
+  if (h) {
+    const dir = new THREE.Vector3().subVectors(h.point, camera.position);
+    setWalk({ x: h.point.x, z: h.point.z, yaw: Math.atan2(-dir.x, -dir.z) });
+  }
+});
+
+// ---------- 鍵盤 ----------
+const keys = new Set();
+window.addEventListener('keydown', e => {
+  if (e.target instanceof HTMLInputElement) return;
+  if (e.key === 'v' || e.key === 'V') { mode === 'orbit' ? setWalk() : setOrbit(); return; }
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+  keys.add(e.key.length === 1 ? e.key.toLowerCase() : e.key);
+});
+window.addEventListener('keyup', e => keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key));
+window.addEventListener('blur', () => keys.clear());
+
+// ---------- 走進去時的滑鼠拖曳、滾輪 ----------
+let drag = null;
+canvas.addEventListener('pointerdown', e => {
+  canvas.focus();
+  if (mode !== 'walk') return;
+  drag = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (mode !== 'walk' || !drag) return;
+  yawPitch.yaw -= (e.clientX - drag.x) * 0.004;
+  yawPitch.pitch = THREE.MathUtils.clamp(yawPitch.pitch - (e.clientY - drag.y) * 0.004, -1.2, 1.2);
+  drag = { x: e.clientX, y: e.clientY };
+  applyLook();
+});
+canvas.addEventListener('pointerup', () => { drag = null; });
+canvas.addEventListener('wheel', e => {
+  if (mode !== 'walk') return;
+  e.preventDefault();
+  move(-Math.sign(e.deltaY) * 0.35);
+}, { passive: false });
+
+function move(dist) {
+  const dir = new THREE.Vector3(-Math.sin(yawPitch.yaw), 0, -Math.cos(yawPitch.yaw));
+  if (dist < 0) dir.negate();
+  const step = Math.abs(dist);
+  // 腰高和膝高各打一條，撞到牆或家具就停在 RADIUS 外
+  for (const h of [0.95, 0.35]) {
+    const o = camera.position.clone(); o.y = box.min.y + h;
+    ray.set(o, dir); ray.far = step + RADIUS;
+    const hit = ray.intersectObjects(solids.filter(x => x !== ceiling && x !== floorMesh), false)[0];
+    if (hit) return;
+  }
+  camera.position.addScaledVector(dir, step);
+}
+
+// ---------- 迴圈 ----------
+const clock = new THREE.Clock();
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  composer.setSize(w, h);
+  bloom.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (house) {
+    if (mode === 'walk') {
+      const fast = keys.has('Shift') ? 2.2 : 1.1;
+      if (keys.has('ArrowUp') || keys.has('w')) move(fast * dt * 1.6);
+      if (keys.has('ArrowDown') || keys.has('s')) move(-fast * dt * 1.2);
+      if (keys.has('ArrowLeft') || keys.has('a')) { yawPitch.yaw += 1.6 * dt; applyLook(); }
+      if (keys.has('ArrowRight') || keys.has('d')) { yawPitch.yaw -= 1.6 * dt; applyLook(); }
+      hud.textContent = `走進去 · 眼高 ${EYE} m`;
+    } else {
+      const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(orbit.target));
+      let changed = false;
+      if (keys.has('ArrowLeft')) { sph.theta -= 1.2 * dt; changed = true; }
+      if (keys.has('ArrowRight')) { sph.theta += 1.2 * dt; changed = true; }
+      if (keys.has('ArrowUp')) { sph.phi = Math.max(0.15, sph.phi - 0.8 * dt); changed = true; }
+      if (keys.has('ArrowDown')) { sph.phi = Math.min(Math.PI * 0.49, sph.phi + 0.8 * dt); changed = true; }
+      if (changed) camera.position.copy(orbit.target).add(new THREE.Vector3().setFromSpherical(sph));
+      orbit.update();
+      hud.textContent = '俯瞰 · 雙擊地板走進去';
+    }
+  }
+  composer.render();
+  requestAnimationFrame(tick);
+}
+tick();
+</script>
+
+</body>
+</html>
