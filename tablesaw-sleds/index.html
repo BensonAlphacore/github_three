@@ -102,6 +102,8 @@ dd{margin:0;min-width:0}
     <button type="button" class="tab" id="tab-finger" data-k="finger" aria-pressed="false">指接榫</button>
     <button type="button" class="tab" id="tab-rabbet" data-k="rabbet" aria-pressed="false">企口</button>
     <button type="button" class="tab" id="tab-groove" data-k="groove" aria-pressed="false">洗 T 軌槽</button>
+    <button type="button" class="tab" id="tab-dtube" data-k="dtube" aria-pressed="false">銅管鑽直孔</button>
+    <button type="button" class="tab" id="tab-dcorner" data-k="dcorner" aria-pressed="false">鐵角鑽直孔</button>
     <button type="button" class="tab play" id="btn-play">暫停</button>
   </div>
   <figure>
@@ -126,7 +128,7 @@ dd{margin:0;min-width:0}
   var sun=new T.DirectionalLight(0xffffff,0.6); sun.position.set(1500,2600,1800); scene.add(sun);
   function M(c){ return new T.MeshLambertMaterial({color:c}); }
   var mat={ply:M(0xdcbd86),fence:M(0xb98f52),metal:M(0x9fb1ba),dark:M(0x2e3836),body:M(0xe9b800),
-    cab:M(0xc9a877),stock:M(0xa5683a),board:M(0xc79463),red:M(0xcf3327),blade:M(0xd9dee0),top:M(0xb9c3c7)};
+    cab:M(0xc9a877),stock:M(0xa5683a),board:M(0xc79463),red:M(0xcf3327),brass:M(0xc9a227),blade:M(0xd9dee0),top:M(0xb9c3c7)};
   var lineMat=new T.LineBasicMaterial({color:0x1c2523,transparent:true,opacity:0.4});
   function outline(o,g){ o.add(new T.LineSegments(new T.EdgesGeometry(g),lineMat)); }
   function box(p,m,x0,x1,y0,y1,z0,z1){
@@ -358,6 +360,44 @@ dd{margin:0;min-width:0}
         cap:'兩支 L 鋁材把底座夾住，修邊機只能前後走。框靠著基準直條洗第一刀，塞 9 的墊片洗第二刀，換 18 的墊片洗第三刀，槽就是 30 寬。洗完把 T 軌放進去。'};
     }
   };
+  function drillScene(corner){
+    var r=new T.Group(), J=new T.Group(), D=new T.Group(); r.add(J); r.add(D);
+    var HX=0, HZ=120, TOP=36, rb=corner?5:1.5, LX=corner?131.3:0;
+    box(r,mat.cab,-420,420,-60,0,-300,300);
+    box(r,mat.ply,-250,250,0,TOP,-150,150);
+    var sh=new T.Shape(); sh.moveTo(0,-30); sh.lineTo(150,-30); sh.lineTo(120,0); sh.lineTo(150,30); sh.lineTo(0,30); sh.lineTo(0,-30);
+    var bg=new T.ExtrudeGeometry(sh,{depth:36,bevelEnabled:false}); bg.rotateX(-Math.PI/2);
+    var body=new T.Mesh(bg,mat.fence); outline(body,bg); J.add(body);
+    [[-13.94,Math.PI/4],[13.94,-Math.PI/4]].forEach(function(q){
+      var pg=new T.BoxGeometry(42.4,36,3), pm=new T.Mesh(pg,mat.metal); outline(pm,pg);
+      pm.position.set(136.06,18,q[0]); pm.rotation.y=q[1]; J.add(pm); });
+    var tube=new T.Mesh(new T.CylinderGeometry(3.2,3.2,36,24),mat.brass); tube.position.set(0,18,0); J.add(tube);
+    box(J,mat.ply,0,150,-26,36,30,42);
+    function dc(m,rad,y0,y1){ var o=new T.Mesh(new T.CylinderGeometry(rad,rad,y1-y0,28),m); o.position.y=(y0+y1)/2; D.add(o); return o; }
+    dc(mat.blade,rb,0,95); dc(mat.dark,14,95,130); dc(mat.body,27,130,235);
+    box(D,mat.body,-17,17,150,200,20,140); box(D,mat.dark,-30,30,140,210,140,185);
+    var hole=new T.Mesh(new T.CylinderGeometry(rb,rb,0.6,24),mat.dark); hole.position.set(HX,TOP+0.3,HZ); r.add(hole);
+    var pilot=null;
+    if(corner){ pilot=new T.Mesh(new T.CylinderGeometry(1.5,1.5,0.6,16),mat.dark); pilot.position.set(HX,TOP+0.3,HZ); r.add(pilot); }
+    var deep=corner?8:10, y0=TOP+(corner?0:36);
+    function anim(u){
+      var y, lift=0;
+      if(u<0.2) y=200-(200-y0)*ease(u/0.2);
+      else if(u<0.6) y=y0-(y0-deep)*((u-0.2)/0.4);
+      else if(u<0.8) y=deep+(200-deep)*ease((u-0.6)/0.2);
+      else { y=200; lift=ease((u-0.8)/0.15>1?1:(u-0.8)/0.15)*120; }
+      D.position.set(HX,y,HZ);
+      J.position.set(HX-LX,TOP+lift,HZ);
+      hole.visible=u>=0.2+(corner?0.02:0.2);
+      if(pilot) pilot.visible=!hole.visible;
+    }
+    return {r:r,g:D,b:new T.Group(),nosaw:true,anim:anim,cam:[520,470,760],tgt:[0,70,110],
+      cap:corner
+        ?'導引塊另一端切 90 度缺口，缺口裡鎖鐵角碼。大鑽頭靠在鐵角的內角，兩個面一起擋住，鑽頭就不會歪。適合 6 以上的鑽頭。'
+        :'導引塊端頭黏一支內徑 3 的黃銅管，3 mm 鑽頭穿過銅管往下鑽。銅管和鑽頭之間沒有間隙，位置和垂直一次到位。前面的擋板扣住板邊。'};
+  }
+  build.dtube=function(){ return drillScene(false); };
+  build.dcorner=function(){ return drillScene(true); };
   var controls=new T.OrbitControls(cam,renderer.domElement);
   controls.enableZoom=false; controls.enablePan=false; controls.enableDamping=true;
   controls.maxPolarAngle=Math.PI*0.52;
@@ -902,6 +942,35 @@ dd{margin:0;min-width:0}
     <dt>深度</dt><dd>總深 <span class="n">13.1</span>，分三次下，每次 4 到 5</dd>
     <dt>先試</dt><dd>在廢料上洗一段，拿 T 軌塞進去試鬆緊。太緊就在最後那片墊片上貼一層紙膠帶</dd>
     <dt>靠板邊的槽</dt><dd>不用治具，裝機器附的側導板貼著板邊推</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>垂直鑽孔導引塊</h2>
+  <p class="use">沒有鑽床時用手電鑽鑽直孔。一塊導引塊兩端各一種導引：一端銅管鑽 3 mm 小孔，一端鐵角扶大鑽頭。</p>
+  <figure>
+    <svg viewBox="0 0 720 300" role="img" aria-label="垂直鑽孔導引塊的俯視圖：長方木塊左端中間嵌一支黃銅管，右端切 90 度缺口並鎖上鐵角碼，大鑽頭靠在鐵角內角，下緣一片擋板扣住板邊">
+      <polygon class="fence" points="135,50 585,50 495,140 585,230 135,230"/>
+      <polygon class="metal" points="585,50 495,140 585,230 585,217.3 507.7,140 585,62.7"/>
+      <circle class="stop" cx="529" cy="140" r="15"/>
+      <circle class="metal" cx="135" cy="140" r="7"/>
+      <circle class="stop" cx="135" cy="140" r="4"/>
+      <rect class="ply" x="135" y="230" width="450" height="20"/>
+      <text class="lb" x="120" y="144" text-anchor="end">黃銅管 內徑 3</text>
+      <text class="lb" x="600" y="100">鐵角碼</text>
+      <text class="lb" x="556" y="144">大鑽頭靠在內角</text>
+      <text class="lb" x="330" y="144" text-anchor="middle">本體 150 × 60，厚 36</text>
+      <text class="lb" x="360" y="272" text-anchor="middle">擋板，扣住板邊</text>
+    </svg>
+    <figcaption>從上面往下看。左端的銅管給 3 mm 鑽頭穿過去；右端的鐵角給大鑽頭靠。擋板讓孔到板邊的距離固定。</figcaption>
+  </figure>
+  <dl>
+    <dt>本體</dt><dd>兩層 18 mm 夾板膠合成 <span class="n">36</span> 厚，裁 <span class="n">150 × 60</span>。厚度就是導引長度</dd>
+    <dt>銅管端</dt><dd>外徑 <span class="n">4</span>、內徑 <span class="n">3</span> 的黃銅管，長 <span class="n">36</span>。端面鋸一道淺溝，用瞬間膠黏進去，黏之前拿角尺從兩個方向對垂直</dd>
+    <dt>鐵角端</dt><dd>切 90 度缺口，鎖一片鐵角碼。<span class="n">6</span> 以上的鑽頭才靠這端，小鑽頭會卡在鐵角內角的圓弧裡晃</dd>
+    <dt>擋板</dt><dd>側面鎖一片薄板，比本體底面低 <span class="n">20</span> 以上，扣住工件板邊，也方便用夾子夾</dd>
+    <dt>止滑</dt><dd>底面貼砂紙</dd>
+    <dt>大孔</dt><dd>先用銅管端鑽 3 mm 導孔定位置，再換鐵角端用大鑽頭順著導孔鑽</dd>
   </dl>
 </section>
 
