@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>DWE7492 推台圖</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 版面：單欄工作圖紙，每種推台一張俯視圖，圖下面接用途與尺寸 */
+:root{
+  --bg:#edf0ee; --panel:#f8faf9; --ink:#1c2523; --muted:#5b6a66; --line:#c3ccc8;
+  --ply:#dcbd86; --ply-edge:#8f6f3a; --fence:#b98f52; --metal:#8da2ad;
+  --stock:#a5683a; --blade:#cf3327; --saw:#dfe5e3;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141a19; --panel:#1b2322; --ink:#e4ebe8; --muted:#94a39f; --line:#35413e;
+  --ply:#8b6d3d; --ply-edge:#d0ab6c; --fence:#b08a4f; --metal:#7f97a3;
+  --stock:#c98a57; --blade:#ff5b4d; --saw:#27312f; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141a19; --panel:#1b2322; --ink:#e4ebe8; --muted:#94a39f; --line:#35413e;
+  --ply:#8b6d3d; --ply-edge:#d0ab6c; --fence:#b08a4f; --metal:#7f97a3;
+  --stock:#c98a57; --blade:#ff5b4d; --saw:#27312f; color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding-block:36px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:40px}
+h1{font-size:30px;line-height:1.25;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:22px;margin:0;font-weight:700}
+p{margin:0;max-width:38em}
+.lead{color:var(--muted)}
+header,section{display:flex;flex-direction:column;gap:14px}
+.use{font-weight:500}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:560px;height:auto;color:var(--ink)}
+figcaption{padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:15px}
+dt{color:var(--muted)}
+dd{margin:0;min-width:0}
+.n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.93em}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:12px;border:1px solid var(--ply-edge);display:inline-block}
+.note{border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:14px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font:inherit;font-size:15px;font-weight:500;padding:7px 16px;border-radius:4px;cursor:pointer;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--blade);outline-offset:2px}
+.tab.play{margin-left:auto}
+#stage3d{width:100%;aspect-ratio:16/10;max-width:100%;cursor:grab}
+#stage3d canvas{display:block;width:100%;height:100%}
+/* SVG 零件 */
+.saw{fill:var(--saw);stroke:var(--muted);stroke-width:1.2;stroke-dasharray:6 4}
+.tbl{fill:var(--saw);stroke:var(--muted);stroke-width:1.2}
+.slot{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3;fill:none}
+.ply{fill:var(--ply);stroke:var(--ply-edge);stroke-width:1.4}
+.fence{fill:var(--fence);stroke:var(--ply-edge);stroke-width:1.4}
+.fenceline{stroke:var(--fence);stroke-width:14;fill:none;stroke-linejoin:miter}
+.runner{fill:var(--metal);stroke:none;opacity:.85}
+.metal{fill:var(--metal);stroke:var(--ink);stroke-width:1}
+.stock{fill:var(--stock);stroke:var(--ink);stroke-width:1}
+.board{fill:var(--stock);fill-opacity:.45;stroke:var(--ink);stroke-width:1}
+.stockline{stroke:var(--stock);stroke-width:22;fill:none}
+.kerf{stroke:var(--blade);stroke-width:1;stroke-dasharray:4 3;fill:none}
+.blade{stroke:var(--blade);stroke-width:4;fill:none}
+.bl2{stroke:var(--blade);stroke-width:1.5;fill:var(--blade);fill-opacity:.18}
+.stop{fill:var(--blade);stroke:none}
+.arrow{stroke:currentColor;stroke-width:1.5;fill:none}
+.lb{fill:currentColor;font-family:var(--sans);font-size:12.5px}
+.lbm{fill:var(--muted);font-family:var(--sans);font-size:12px}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>DWE7492 要做的推台</h1>
+  <p class="lead">上面是會動的立體圖，下面是標尺寸的平面圖。俯視圖裡操作者站在圖的下方，往上推。紅色實線是鋸片，紅色虛線是鋸路。</p>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--ply)"></i>夾板底板</span>
+    <span><i class="sw" style="background:var(--fence)"></i>擋板</span>
+    <span><i class="sw" style="background:var(--metal)"></i>鋁件、滑條、線軌</span>
+    <span><i class="sw" style="background:var(--stock)"></i>要切的料</span>
+  </div>
+</header>
+
+<section>
+  <div class="tabs">
+    <button type="button" class="tab" id="tab-cross" data-k="cross" aria-pressed="true">橫切推台</button>
+    <button type="button" class="tab" id="tab-panel" data-k="panel" aria-pressed="false">大板推台</button>
+    <button type="button" class="tab" id="tab-miter" data-k="miter" aria-pressed="false">45° 推台</button>
+    <button type="button" class="tab" id="tab-rip" data-k="rip" aria-pressed="false">靠山載板</button>
+    <button type="button" class="tab" id="tab-thin" data-k="thin" aria-pressed="false">切薄片</button>
+    <button type="button" class="tab" id="tab-tall" data-k="tall" aria-pressed="false">側立剖板</button>
+    <button type="button" class="tab" id="tab-tenon" data-k="tenon" aria-pressed="false">直立切榫</button>
+    <button type="button" class="tab" id="tab-stop" data-k="stop" aria-pressed="false">定長墊塊</button>
+    <button type="button" class="tab" id="tab-taper" data-k="taper" aria-pressed="false">錐度切</button>
+    <button type="button" class="tab" id="tab-finger" data-k="finger" aria-pressed="false">指接榫</button>
+    <button type="button" class="tab" id="tab-rabbet" data-k="rabbet" aria-pressed="false">企口</button>
+    <button type="button" class="tab" id="tab-groove" data-k="groove" aria-pressed="false">洗 T 軌槽</button>
+    <button type="button" class="tab play" id="btn-play">暫停</button>
+  </div>
+  <figure>
+    <div id="stage3d"></div>
+    <figcaption><span id="cap3d">角材頂住紅色止擋，連推台一起推過鋸片。切下來的長度每支都一樣。</span> 拖曳可以轉視角。</figcaption>
+  </figure>
+</section>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+(function(){
+  var stage=document.getElementById('stage3d'), cap=document.getElementById('cap3d');
+  if(!window.THREE){ cap.textContent='立體圖載入失敗，請看下面的平面圖。'; return; }
+  var T=THREE, renderer;
+  try{ renderer=new T.WebGLRenderer({antialias:true,alpha:true}); }
+  catch(e){ cap.textContent='這個瀏覽器開不了立體圖，請看下面的平面圖。'; return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  stage.appendChild(renderer.domElement);
+  var scene=new T.Scene();
+  var cam=new T.PerspectiveCamera(32,1.6,50,30000);
+  scene.add(new T.HemisphereLight(0xffffff,0x8a8f8c,0.95));
+  var sun=new T.DirectionalLight(0xffffff,0.6); sun.position.set(1500,2600,1800); scene.add(sun);
+  function M(c){ return new T.MeshLambertMaterial({color:c}); }
+  var mat={ply:M(0xdcbd86),fence:M(0xb98f52),metal:M(0x9fb1ba),dark:M(0x2e3836),body:M(0xe9b800),
+    cab:M(0xc9a877),stock:M(0xa5683a),board:M(0xc79463),red:M(0xcf3327),blade:M(0xd9dee0),top:M(0xb9c3c7)};
+  var lineMat=new T.LineBasicMaterial({color:0x1c2523,transparent:true,opacity:0.4});
+  function outline(o,g){ o.add(new T.LineSegments(new T.EdgesGeometry(g),lineMat)); }
+  function box(p,m,x0,x1,y0,y1,z0,z1){
+    var g=new T.BoxGeometry(x1-x0,y1-y0,z1-z0), o=new T.Mesh(g,m);
+    o.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2); outline(o,g); p.add(o); return o;
+  }
+  // 以鋸片為 x=0 把料的平面輪廓切成左右兩塊
+  function clip(pts,left){
+    var out=[];
+    for(var i=0;i<pts.length;i++){
+      var a=pts[i], b=pts[(i+1)%pts.length];
+      var ai=left?a[0]<=0:a[0]>=0, bi=left?b[0]<=0:b[0]>=0;
+      if(ai) out.push(a);
+      if(ai!==bi){ var t=a[0]/(a[0]-b[0]); out.push([0,a[1]+t*(b[1]-a[1])]); }
+    }
+    return out;
+  }
+  function prism(p,m,pts,y0,y1){
+    var s=new T.Shape();
+    pts.forEach(function(q,i){ if(i) s.lineTo(q[0],-q[1]); else s.moveTo(q[0],-q[1]); });
+    var g=new T.ExtrudeGeometry(s,{depth:y1-y0,bevelEnabled:false}); g.rotateX(-Math.PI/2);
+    var o=new T.Mesh(g,m); o.position.y=y0; outline(o,g); p.add(o); return o;
+  }
+  // 檯鋸、檯鋸櫃、出料桌：檯面頂 y=0，鋸片 x=0，操作者在 +z
+  var saw=new T.Group(); scene.add(saw);
+  box(saw,mat.cab,-265,405,-755,-330,-390,390);
+  box(saw,mat.body,-270,410,-330,-20,-325,325);
+  box(saw,mat.top,-270,410,-20,0,-325,325);
+  box(saw,mat.dark,-139.5,-120.5,0,1,-325,325);
+  box(saw,mat.dark,120.5,139.5,0,1,-325,325);
+  var fenceBar=box(saw,mat.metal,420,460,0,65,-370,370);
+  box(saw,mat.metal,-270,540,-45,-15,340,365);
+  box(saw,mat.metal,-270,540,-45,-15,-365,-340);
+  box(saw,mat.ply,-270,410,-32,-2,-925,-372);
+  [[-250,-905],[390,-905],[-250,-395],[390,-395]].forEach(function(q){
+    box(saw,mat.fence,q[0]-20,q[0]+20,-755,-32,q[1]-20,q[1]+20); });
+  var holder=new T.Group(); holder.rotation.z=Math.PI/2; holder.position.set(0,-57,0); saw.add(holder);
+  var blade=new T.Mesh(new T.CylinderGeometry(127,127,3,48),mat.blade); holder.add(blade);
+  for(var i=0;i<4;i++){
+    var tooth=new T.Mesh(new T.BoxGeometry(90,3.8,7),mat.dark);
+    tooth.position.set(Math.cos(i*Math.PI/2)*75,0,Math.sin(i*Math.PI/2)*75); tooth.rotation.y=-i*Math.PI/2; blade.add(tooth);
+  }
+  var build={
+    cross:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.ply,-550,300,0,12,-300,300);
+      box(g,mat.fence,-550,300,12,82,-300,-264);
+      box(g,mat.fence,-550,300,12,112,264,300);
+      box(g,mat.fence,-20,20,12,112,300,360);
+      box(g,mat.metal,-1000,-550,72,112,264,300);
+      box(g,mat.red,-915,-900,12,72,214,264);
+      var pts=[[-900,214],[200,214],[200,264],[-900,264]];
+      prism(g,mat.stock,clip(pts,true),12,62);
+      var b=prism(g,mat.stock,clip(pts,false),12,62);
+      box(r,mat.ply,-1000,-700,-8,12,-250,450);
+      box(r,mat.fence,-870,-830,-735,-8,80,120);
+      box(r,mat.fence,-950,-750,-755,-735,-100,300);
+      return {r:r,g:g,b:b,start:100,end:-420,cutAt:-380,cam:[1700,1350,2500],tgt:[-250,-200,-150],
+        cap:'角材頂住紅色止擋，連推台一起推過鋸片。切下來的長度每支都一樣。'};
+    },
+    panel:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.ply,-890,-290,-18,0,-250,250);
+      box(g,mat.metal,-980,-80,0,80,210,250);
+      box(g,mat.red,-895,-880,0,80,150,210);
+      var pts=[[-880,-390],[340,-390],[340,210],[-880,210]];
+      prism(g,mat.board,clip(pts,true),0,18);
+      var b=prism(g,mat.board,clip(pts,false),0,18);
+      [-390,-790].forEach(function(x){
+        box(r,mat.metal,x-15,x+15,-48,-18,-660,840);
+        box(r,mat.fence,x-20,x+20,-108,-48,-660,840);
+        box(r,mat.fence,x-20,x+20,-755,-108,-660,-620);
+        box(r,mat.fence,x-20,x+20,-755,-108,800,840);
+      });
+      box(r,mat.fence,-810,-265,-148,-108,-370,-330);
+      box(r,mat.fence,-810,-265,-148,-108,330,370);
+      return {r:r,g:g,b:b,start:520,end:-380,cutAt:-335,cam:[2300,1900,3300],tgt:[-300,-250,-50],
+        cap:'板子靠著橫切擋板，滑台沿兩支線軌往前送，切完落在出料桌上。'};
+    },
+    miter:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.ply,-300,300,0,12,-300,300);
+      var f1=box(g,mat.fence,-200,200,12,82,-18,18); f1.position.set(-141.4,47,21.4); f1.rotation.y=Math.PI/4;
+      var f2=box(g,mat.fence,-200,200,12,82,-18,18); f2.position.set(141.4,47,21.4); f2.rotation.y=-Math.PI/4;
+      var d=[0.7071,-0.7071], n=[-0.7071,-0.7071], P=[-30.4,-150.4];
+      function c(s,w){ return [P[0]+d[0]*s+n[0]*w, P[1]+d[1]*s+n[1]*w]; }
+      var pts=[c(-420,-25),c(120,-25),c(120,25),c(-420,25)];
+      prism(g,mat.stock,clip(pts,true),12,62);
+      var b=prism(g,mat.stock,clip(pts,false),12,62);
+      return {r:r,g:g,b:b,start:360,end:-60,cutAt:-20,cam:[1300,1300,2100],tgt:[0,-200,-100],
+        cap:'角材靠在擋板外側推過去，切出 45° 斜口。換另一片擋板切另一支，合起來就是直角。'};
+    },
+    rip:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.ply,3,420,0,12,-1100,1100);
+      var pts=[[-20,-1000],[280,-1000],[280,1000],[-20,1000]];
+      var b=prism(g,mat.stock,clip(pts,true),12,67);
+      prism(g,mat.stock,clip(pts,false),12,67);
+      box(g,mat.red,240,400,67,82,-620,-580);
+      box(g,mat.red,240,400,67,82,580,620);
+      box(g,mat.fence,3,420,12,62,1000,1040);
+      [1220,-1320].forEach(function(z){
+        box(r,mat.fence,60,380,-20,-2,z-40,z+40);
+        box(r,mat.fence,200,240,-755,-20,z-20,z+20);
+      });
+      return {r:r,g:g,b:b,dir:-1,start:1150,end:-1180,cutAt:-1140,cam:[2900,2300,3900],tgt:[100,-300,0],
+        cap:'又長又重的料用下壓夾固定在載板上，載板的直邊貼著縱切靠山往前推，切掉左邊的毛邊。'};
+    },
+    thin:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      var pts=[[-6,-300],[145,-300],[145,300],[-6,300]];
+      var b=prism(g,mat.stock,clip(pts,true),0,20);
+      prism(g,mat.stock,clip(pts,false),0,20);
+      box(r,mat.metal,-139.5,-120.5,0,14,170,330);
+      box(r,mat.fence,-150,-30,14,32,200,250);
+      var w=new T.Mesh(new T.CylinderGeometry(12,12,16,24),mat.red); w.position.set(-18,22,225); r.add(w);
+      box(r,mat.ply,-45,45,0,1.2,-180,180);
+      box(g,mat.fence,45,75,20,50,120,330);
+      box(g,mat.fence,45,75,0,20,300,330);
+      box(g,mat.fence,50,70,50,110,180,270);
+      return {r:r,g:g,b:b,fx:145,dir:-1,take:true,start:480,end:-480,cutAt:-400,cam:[-1300,1300,2300],tgt:[0,-150,-50],
+        cap:'定位器卡在左邊凹槽，紅色軸承頂住料的左邊，靠山貼住右邊，推塊壓著料往前推。切下來的薄片落在左邊，不會被夾住。'};
+    },
+    tall:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.stock,-15,-2,0,70,-300,300);
+      box(g,mat.stock,2,15,0,70,-300,300);
+      box(g,mat.stock,-15,15,70,140,-300,300);
+      var b=new T.Group(); g.add(b);
+      box(r,mat.fence,15,33,0,180,-370,370);
+      box(r,mat.ply,-160,-15,0,18,150,250);
+      return {r:r,g:g,b:b,fx:33,start:480,end:-480,cutAt:-400,cam:[-1500,1100,2300],tgt:[0,-120,-50],
+        cap:'板子側立貼著加高靠山推過去，羽毛板把它壓向靠山。第一刀從底下切進 70，翻面再切一刀，整片就剖成兩片。'};
+    },
+    tenon:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.stock,0,30,0,400,-45,45);
+      box(g,mat.stock,-10,0,70,400,-45,45);
+      var b=box(g,mat.stock,-10,-2,0,70,-45,45);
+      box(g,mat.fence,30,48,0,250,-150,150);
+      box(g,mat.fence,48,106,65,83,-150,150);
+      box(g,mat.fence,88,106,0,65,-150,150);
+      box(g,mat.fence,-10,30,60,250,45,75);
+      box(g,mat.red,-24,-10,140,175,-45,75);
+      return {r:r,g:g,b:b,fx:48,dir:-1,take:true,start:400,end:-420,cutAt:-160,cam:[-1300,1000,2100],tgt:[0,60,-30],
+        cap:'料直立、端面朝下，夾在治具的立板上。治具騎著靠山往前推，鋸片切掉榫頭旁邊那一片。'};
+    },
+    stop:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      var pts=[[-300,-25],[170,-25],[170,25],[-300,25]];
+      prism(g,mat.stock,clip(pts,true),0,25);
+      var b=prism(g,mat.stock,clip(pts,false),0,25);
+      box(g,mat.fence,-230,-30,0,60,25,45);
+      box(g,mat.metal,-139,-121,0,3,45,260);
+      box(r,mat.red,170,200,0,50,230,330);
+      return {r:r,g:g,b:b,fx:200,sep:22,start:280,end:-200,cutAt:-125,cam:[-1300,1300,2300],tgt:[0,-150,-50],
+        cap:'紅色墊塊夾在靠山上、鋸片前面。料的右端先頂住墊塊定長度，推到鋸片時已經離開墊塊，切下來的那段不會被夾住。'};
+    },
+    taper:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.ply,3,300,0,12,-450,450);
+      var pts=[[30,-350],[80,-350],[40,350],[-10,350]];
+      var b=prism(g,mat.stock,clip(pts,true),12,62);
+      prism(g,mat.stock,clip(pts,false),12,62);
+      box(g,mat.red,50,220,62,77,-220,-185);
+      box(g,mat.red,30,220,62,77,185,220);
+      box(g,mat.fence,3,140,12,62,350,390);
+      return {r:r,g:g,b:b,fx:300,dir:-1,take:true,start:620,end:-520,cutAt:-455,cam:[-1500,1400,2400],tgt:[100,-150,0],
+        cap:'桌腳斜著夾在載板上，載板貼著靠山直直推。鋸片切掉靠操作者這頭的斜片，腳就一頭粗一頭細。'};
+    },
+    finger:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.fence,-200,200,0,120,20,38);
+      box(g,mat.metal,-139,-121,0,3,38,250);
+      box(g,mat.stock,-95,55,12,250,8,20);
+      [[45,55],[25,35],[5,15],[-95,-5]].forEach(function(q){ box(g,mat.stock,q[0],q[1],0,12,8,20); });
+      var b=box(g,mat.stock,-5,5,0,12,8,20);
+      box(g,mat.red,15,25,0,12,-6,20);
+      return {r:r,g:g,b:b,bh:12,dust:true,start:200,end:-120,cutAt:-60,cam:[-1000,800,-1600],tgt:[0,60,0],
+        cap:'這張是從鋸檯後面看。板子直立靠著背板，剛切好的槽套在紅色定位銷上，推過去切下一個槽。每切一刀往旁邊挪一格。'};
+    },
+    rabbet:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      box(g,mat.board,-250,-8,0,18,-300,300);
+      box(g,mat.board,-8,2,9,18,-300,300);
+      var b=box(g,mat.board,-8,2,0,9,-300,300);
+      box(r,mat.fence,2,20,0,90,-370,370);
+      return {r:r,g:g,b:b,bh:9,dust:true,fx:20,start:420,end:-420,cutAt:-350,cam:[-900,500,1700],tgt:[0,20,0],
+        cap:'板子平放，板邊貼著夾在靠山上的犧牲木面。鋸片只升到板厚的一半，把板邊下面那一角切掉。'};
+    },
+    groove:function(){
+      var r=new T.Group(), F=new T.Group(), g=new T.Group(); r.add(F); F.add(g);
+      box(r,mat.cab,-420,420,-60,0,-560,560);
+      box(r,mat.ply,-300,-15,0,18,-500,500);
+      box(r,mat.ply,15,300,0,18,-500,500);
+      box(r,mat.ply,-15,15,0,5,-500,500);
+      var fL=box(r,mat.ply,-15,-3,5,18,-500,500), fR=box(r,mat.ply,3,15,5,18,-500,500), fM=box(r,mat.ply,-3,3,5,18,-500,500);
+      box(r,mat.fence,-152,-92,18,36,-520,520);
+      [-300,300].forEach(function(z){ box(r,mat.red,-140,-104,36,52,z-25,z+25); });
+      var sp9=box(r,mat.stock,-92,-83,18,42,-260,260), sp18=box(r,mat.stock,-92,-74,18,42,-260,260);
+      box(F,mat.metal,-53,-50,18,48,-700,700); box(F,mat.metal,-83,-53,18,21,-700,700);
+      box(F,mat.metal,50,53,18,48,-700,700);   box(F,mat.metal,53,83,18,21,-700,700);
+      box(F,mat.fence,-83,83,21,51,-700,-660); box(F,mat.fence,-83,83,21,51,660,700);
+      [-400,400].forEach(function(z){ box(F,mat.red,58,83,21,45,z-25,z+25); });
+      function cyl(m,rad,y0,y1){ var o=new T.Mesh(new T.CylinderGeometry(rad,rad,y1-y0,32),m); o.position.y=(y0+y1)/2; g.add(o); return o; }
+      cyl(mat.dark,50,18,26); cyl(mat.red,38,26,170); cyl(mat.blade,6,5,18);
+      box(g,mat.dark,-42,42,170,225,-60,60);
+      var track=box(r,mat.metal,-15,15,5,17.7,-500,500);
+      function rem(f,a,b){ var len=b-a; f.visible=len>1; if(len>1){ f.scale.z=len/1000; f.position.z=(a+b)/2; } }
+      var X=[-9,0,9], FS=[fL,fM,fR], T0=[0,0.31,0.62];
+      function anim(u){
+        var i, fx=9, z=-580;
+        for(i=0;i<3;i++) rem(FS[i],-500,500);
+        for(i=0;i<3;i++){
+          var t=u-T0[i];
+          if(t<0) break;
+          if(t<0.2){ fx=X[i]; z=580-1160*(t/0.2); rem(FS[i],-500,Math.min(500,z)); break; }
+          rem(FS[i],0,0);
+          if(i===2){ fx=9; z=-580; break; }
+          if(t<0.25){ fx=X[i]; z=-580+1160*((t-0.2)/0.05); break; }
+          if(t<0.31){ fx=X[i]+(X[i+1]-X[i])*ease((t-0.25)/0.06); z=580; break; }
+        }
+        F.position.x=fx; g.position.z=z;
+        sp9.visible=u>=0.25&&u<0.56; sp18.visible=u>=0.56;
+        var q=u<0.84?0:Math.min(1,(u-0.84)/0.1);
+        track.visible=u>=0.84; track.position.y=11.35+(1-ease(q))*160;
+      }
+      return {r:r,g:g,b:new T.Group(),nosaw:true,anim:anim,cam:[1000,950,1500],tgt:[0,20,0],
+        cap:'兩支 L 鋁材把底座夾住，修邊機只能前後走。框靠著基準直條洗第一刀，塞 9 的墊片洗第二刀，換 18 的墊片洗第三刀，槽就是 30 寬。洗完把 T 軌放進去。'};
+    }
+  };
+  var controls=new T.OrbitControls(cam,renderer.domElement);
+  controls.enableZoom=false; controls.enablePan=false; controls.enableDamping=true;
+  controls.maxPolarAngle=Math.PI*0.52;
+  var cache={}, cur=null, DUR=6500;
+  var playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var tt=playing?0:0.3*DUR, last=0;
+  var tabs=[].slice.call(document.querySelectorAll('.tab[data-k]')), playBtn=document.getElementById('btn-play');
+  function show(k){
+    if(cur) scene.remove(cur.r);
+    cur=cache[k]||(cache[k]=build[k]()); scene.add(cur.r);
+    cam.position.set(cur.cam[0],cur.cam[1],cur.cam[2]); controls.target.set(cur.tgt[0],cur.tgt[1],cur.tgt[2]);
+    cap.textContent=cur.cap;
+    fenceBar.position.x=(cur.fx===undefined?420:cur.fx)+20;
+    holder.position.y=(cur.bh||70)-127;
+    saw.visible=!cur.nosaw;
+    tabs.forEach(function(b){ b.setAttribute('aria-pressed',b.dataset.k===k?'true':'false'); });
+    if(playing) tt=0;
+  }
+  tabs.forEach(function(b){ b.addEventListener('click',function(){ show(b.dataset.k); }); });
+  function label(){ playBtn.textContent=playing?'暫停':'播放'; }
+  playBtn.addEventListener('click',function(){ playing=!playing; label(); });
+  label();
+  function ease(x){ return x*x*(3-2*x); }
+  function pose(u){
+    if(cur.anim){ cur.anim(u); return; }
+    var k =u<0.5 ? ease(u/0.5) : u<0.62 ? 1 : u<0.92 ? 1-ease((u-0.62)/0.3) : 0;
+    var off=cur.start+(cur.end-cur.start)*k;
+    cur.g.position.z=off;
+    var sep = u<0.5 ? Math.min(1,Math.max(0,(cur.cutAt-off)/30)) : u<0.92 ? 1 : 0;
+    cur.b.position.x=cur.dust?0:(cur.dir||1)*(2+sep*(cur.sep||45));
+    cur.b.visible=cur.dust?sep<0.5:!(cur.take&&u>=0.62&&u<0.92);
+  }
+  function fit(){
+    var w=stage.clientWidth, h=stage.clientHeight; if(!w||!h) return;
+    renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
+  }
+  if(window.ResizeObserver) new ResizeObserver(fit).observe(stage); else window.addEventListener('resize',fit);
+  show('cross'); fit();
+  function frame(now){
+    var dt=last?Math.min(100,now-last):0; last=now;
+    if(playing){ tt=(tt+dt)%DUR; blade.rotation.y+=dt*0.02; }
+    pose(tt/DUR); controls.update(); renderer.render(scene,cam);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+<section>
+  <h2>橫切推台</h2>
+  <p class="use">切角材用。切斷、切直角、同一個長度連切很多支。</p>
+  <figure>
+    <svg viewBox="0 0 720 430" role="img" aria-label="橫切推台俯視圖：底板騎在檯面兩條溝槽上，角材靠著靠身擋板，左邊止擋定長度">
+      <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="saw" x="220" y="80" width="272" height="260"/>
+      <rect class="saw" x="10" y="282" width="90" height="62"/>
+      <rect class="ply" x="110" y="96" width="340" height="240"/>
+      <rect class="runner" x="274" y="96" width="8" height="240"/>
+      <rect class="runner" x="378" y="96" width="8" height="240"/>
+      <line class="kerf" x1="330" y1="96" x2="330" y2="336"/>
+      <line class="blade" x1="330" y1="170" x2="330" y2="270"/>
+      <rect class="fence" x="110" y="96" width="340" height="14"/>
+      <rect class="fence" x="110" y="320" width="340" height="16"/>
+      <rect class="fence" x="318" y="336" width="24" height="26"/>
+      <rect class="metal" x="14" y="323" width="96" height="10"/>
+      <rect class="stock" x="54" y="298" width="380" height="22"/>
+      <rect class="stop" x="44" y="296" width="10" height="30"/>
+      <rect class="metal" x="498" y="70" width="16" height="280"/>
+      <text class="lb" x="522" y="100">縱切靠山</text>
+      <text class="lbm" x="522" y="116">原廠</text>
+      <line class="arrow" x1="610" y1="300" x2="610" y2="140" marker-end="url(#ah1)"/>
+      <text class="lb" x="622" y="224">往前推</text>
+      <text class="lbm" x="486" y="74" text-anchor="end">檯鋸檯面</text>
+      <text class="lb" x="120" y="130">遠端擋板 高 70</text>
+      <text class="lb" x="120" y="160">底板 12 mm 夾板 850 × 600</text>
+      <text class="lb" x="220" y="240" text-anchor="middle">鋸片左邊 550</text>
+      <text class="lb" x="392" y="240">右邊 300</text>
+      <text class="lb" x="392" y="200">滑條 2 支</text>
+      <text class="lb" x="160" y="291">角材</text>
+      <text class="lbm" x="55" y="274" text-anchor="middle">托料架</text>
+      <text class="lb" x="120" y="356">靠身擋板 高 100、厚 36</text>
+      <text class="lb" x="350" y="356">鋸片出口護盒</text>
+      <text class="lb" x="14" y="378">T 軌＋翻轉止擋</text>
+      <text class="lbm" x="360" y="416" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>角材靠著靠身擋板，左端頂住止擋，推過去就是固定長度。伸出推台的那段用同高的托料架撐住。</figcaption>
+  </figure>
+  <dl>
+    <dt>底板</dt><dd>12 mm 樺木夾板，<span class="n">850 × 600</span></dd>
+    <dt>靠身擋板</dt><dd>高 <span class="n">100</span>、厚 <span class="n">36</span>，兩片 18 mm 夾板對貼</dd>
+    <dt>滑條</dt><dd>可調隙鋁滑條 2 支，長 <span class="n">600</span>，直條式</dd>
+    <dt>止擋</dt><dd>擋板頂面埋 T 軌，往左接延伸臂，要切多長就接多長</dd>
+    <dt>切得到</dt><dd>料寬 <span class="n">300</span> 以內直接切；<span class="n">300</span> 到 <span class="n">450</span> 要在檯鋸前面加同高的托板；料厚約 <span class="n">65</span> 以內</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>橫切推台放樣</h2>
+  <p class="use">側面看過去，料越寬，起刀前推台要往操作者這邊拉得越出來。</p>
+  <figure>
+    <svg viewBox="0 0 720 600" role="img" aria-label="橫切推台側視放樣：三種料寬在起刀位置時推台懸出檯面前緣的長度，以及切完時懸出後緣的長度">
+      <text class="lbm" x="10.0" y="30">出料桌</text>
+      <text class="lbm" x="330.0" y="30" text-anchor="middle">檯鋸檯面（假設深 650、鋸片在正中）</text>
+      <text class="lbm" x="690" y="30" text-anchor="end">操作者在右邊，往左推</text>
+      <rect class="saw" x="10.0" y="111" width="157.5" height="9"/>
+      <rect class="tbl" x="167.5" y="110" width="325.0" height="14"/>
+      <line class="slot" x1="190.0" y1="106" x2="190.0" y2="132"/>
+      <line class="slot" x1="470.0" y1="106" x2="470.0" y2="132"/>
+      <path class="bl2" d="M274.6 110 A63.5 63.5 0 0 1 385.4 110 Z"/>
+      <rect class="runner" x="204.6" y="110" width="150.0" height="5"/>
+      <rect class="ply" x="129.6" y="104.0" width="300.0" height="6.0"/>
+      <rect class="fence" x="411.6" y="54.0" width="18.0" height="50.0"/>
+      <rect class="fence" x="129.6" y="69.0" width="18.0" height="35.0"/>
+      <rect class="stock" x="386.6" y="79.0" width="25.0" height="25.0"/>
+      <text class="lb" x="30" y="36">角材 50 × 50，起刀位置（鋸片露出 65）</text>
+      <text class="lbm" x="500.5" y="140">沒有懸出，離前緣還有 126</text>
+      <rect class="saw" x="10.0" y="251" width="157.5" height="9"/>
+      <rect class="tbl" x="167.5" y="250" width="325.0" height="14"/>
+      <line class="slot" x1="190.0" y1="246" x2="190.0" y2="272"/>
+      <line class="slot" x1="470.0" y1="246" x2="470.0" y2="272"/>
+      <path class="bl2" d="M282.8 250 A63.5 63.5 0 0 1 377.2 250 Z"/>
+      <rect class="runner" x="319.0" y="250" width="150.0" height="5"/>
+      <rect class="ply" x="244.0" y="244.0" width="300.0" height="6.0"/>
+      <rect class="fence" x="526.0" y="194.0" width="18.0" height="50.0"/>
+      <rect class="fence" x="244.0" y="209.0" width="18.0" height="35.0"/>
+      <rect class="stock" x="376.0" y="231.5" width="150.0" height="12.5"/>
+      <text class="lb" x="30" y="176">板材 寬 300 × 厚 25，起刀位置（鋸片露出 42）</text>
+      <line class="arrow" x1="492.5" y1="280" x2="544.0" y2="280"/>
+      <line class="slot" x1="544.0" y1="250" x2="544.0" y2="284"/>
+      <line class="slot" x1="492.5" y1="264" x2="492.5" y2="284"/>
+      <text class="lb" x="518.2" y="296" text-anchor="middle">懸出 103</text>
+      <rect class="saw" x="10.0" y="391" width="157.5" height="9"/>
+      <rect class="tbl" x="167.5" y="390" width="325.0" height="14"/>
+      <line class="slot" x1="190.0" y1="386" x2="190.0" y2="412"/>
+      <line class="slot" x1="470.0" y1="386" x2="470.0" y2="412"/>
+      <path class="bl2" d="M282.8 390 A63.5 63.5 0 0 1 377.2 390 Z"/>
+      <rect class="runner" x="394.0" y="390" width="150.0" height="5"/>
+      <rect class="ply" x="319.0" y="384.0" width="300.0" height="6.0"/>
+      <rect class="fence" x="601.0" y="334.0" width="18.0" height="50.0"/>
+      <rect class="fence" x="319.0" y="349.0" width="18.0" height="35.0"/>
+      <rect class="stock" x="376.0" y="371.5" width="225.0" height="12.5"/>
+      <text class="lb" x="30" y="316">板材 寬 450 × 厚 25，起刀位置（鋸片露出 42）</text>
+      <line class="arrow" x1="492.5" y1="420" x2="619.0" y2="420"/>
+      <line class="slot" x1="619.0" y1="390" x2="619.0" y2="424"/>
+      <line class="slot" x1="492.5" y1="404" x2="492.5" y2="424"/>
+      <text class="lb" x="555.7" y="436" text-anchor="middle">懸出 253</text>
+      <rect class="saw" x="10.0" y="531" width="157.5" height="9"/>
+      <rect class="tbl" x="167.5" y="530" width="325.0" height="14"/>
+      <line class="slot" x1="190.0" y1="526" x2="190.0" y2="552"/>
+      <line class="slot" x1="470.0" y1="526" x2="470.0" y2="552"/>
+      <path class="bl2" d="M282.8 530 A63.5 63.5 0 0 1 377.2 530 Z"/>
+      <rect class="runner" x="140.6" y="530" width="150.0" height="5"/>
+      <rect class="ply" x="65.6" y="524.0" width="300.0" height="6.0"/>
+      <rect class="fence" x="347.6" y="474.0" width="18.0" height="50.0"/>
+      <rect class="fence" x="65.6" y="489.0" width="18.0" height="35.0"/>
+      <rect class="stock" x="197.6" y="511.5" width="150.0" height="12.5"/>
+      <text class="lb" x="30" y="456">板材 寬 300，切完位置</text>
+      <line class="arrow" x1="65.6" y1="560" x2="167.5" y2="560"/>
+      <line class="slot" x1="65.6" y1="530" x2="65.6" y2="564"/>
+      <text class="lb" x="116.6" y="576" text-anchor="middle">懸出後緣 204，出料桌托住</text>
+    </svg>
+    <figcaption>虛線是檯面深只有 560 時的前後緣位置。灰色短條是 300 mm 的滑條。</figcaption>
+  </figure>
+  <dl>
+    <dt>角材 50 × 50</dt><dd>起刀時推台不懸出，離檯面前緣還有 <span class="n">126</span>；滑條 <span class="n">300</span> 全部在凹槽裡</dd>
+    <dt>板寬 300</dt><dd>懸出前緣 <span class="n">103</span>（檯面深 560 時 <span class="n">148</span>）；滑條 <span class="n">300</span> 全部在凹槽裡</dd>
+    <dt>板寬 450</dt><dd>懸出前緣 <span class="n">253</span>，是推台深度的四成（檯面深 560 時 <span class="n">298</span>，一半）；300 滑條只剩 <span class="n">197</span> 在凹槽裡，450 滑條剩 <span class="n">272</span></dd>
+    <dt>切完時</dt><dd>推台懸出後緣約 <span class="n">205</span> 到 <span class="n">212</span>，由出料桌托住</dd>
+    <dt>算法</dt><dd>底板深 <span class="n">600</span>、前後擋板各厚 <span class="n">36</span>、鋸片直徑 <span class="n">254</span>、起刀前離鋸片留 <span class="n">10</span>。檯面深度和鋸片前後位置是假設值</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>大板推台</h2>
+  <p class="use">切板材、門片、桌面這類大件用。滑台走線軌，掛在檯鋸左邊。</p>
+  <figure>
+    <svg viewBox="0 0 720 620" role="img" aria-label="大板推台俯視圖：檯鋸左側一支線軌鎖在檯鋸櫃上，滑台載著板材往前推過鋸片，後面接出料桌">
+      <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="tbl" x="300" y="60" width="204" height="190"/>
+      <rect class="saw" x="300" y="250" width="204" height="195"/>
+      <line class="slot" x1="341" y1="250" x2="341" y2="445"/>
+      <line class="slot" x1="419" y1="250" x2="419" y2="445"/>
+      <rect class="metal" x="260" y="100" width="8" height="450"/>
+      <rect class="metal" x="140" y="100" width="8" height="450"/>
+      <rect class="ply" x="96" y="300" width="184" height="150"/>
+      <rect class="board" x="60" y="260" width="366" height="180"/>
+      <rect class="fence" x="20" y="440" width="276" height="12"/>
+      <rect class="stop" x="50" y="424" width="10" height="20"/>
+      <rect class="metal" x="507" y="240" width="12" height="215"/>
+      <line class="kerf" x1="380" y1="60" x2="380" y2="445"/>
+      <line class="blade" x1="380" y1="300" x2="380" y2="390"/>
+      <line class="arrow" x1="690" y1="540" x2="690" y2="150" marker-end="url(#ah2)"/>
+      <text class="lb" x="680" y="430" text-anchor="end">滑台行程約 1000</text>
+      <text class="lb" x="402" y="140" text-anchor="middle">出料桌 680 × 600</text>
+      <text class="lbm" x="402" y="160" text-anchor="middle">與檯面同高</text>
+      <text class="lbm" x="496" y="436" text-anchor="end">檯鋸</text>
+      <text class="lb" x="276" y="92" text-anchor="end">線軌 2 支，長 1500，架在側架上</text>
+      <text class="lb" x="200" y="286" text-anchor="middle">板材 1220 × 600</text>
+      <text class="lb" x="188" y="400" text-anchor="middle">滑台 600 × 500</text>
+      <text class="lb" x="20" y="472">橫切擋板 900＋止擋</text>
+      <text class="lb" x="528" y="330">縱切靠山（原廠）</text>
+      <text class="lb" x="528" y="348">可拉到 825</text>
+      <text class="lbm" x="360" y="604" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>板子一半躺在滑台、一半躺在檯面，靠著橫切擋板整片往前送。切完的料落在出料桌上。兩支線軌在滑台正下方。</figcaption>
+  </figure>
+  <dl>
+    <dt>線軌</dt><dd>2 支，長 <span class="n">1500</span>，間距 <span class="n">400</span>，架在檯鋸櫃左邊的側架上，側架鎖櫃子不鎖機身</dd>
+    <dt>滑台</dt><dd>18 mm 夾板 <span class="n">600 × 500</span>，面與檯面齊平</dd>
+    <dt>橫切擋板</dt><dd>鋁擠 <span class="n">4080</span>，長 <span class="n">900</span>，帶翻轉止擋</dd>
+    <dt>切得到</dt><dd>板寬 <span class="n">600</span> 以內一刀橫切</dd>
+    <dt>要切更寬</dt><dd>線軌長度＝板寬＋<span class="n">900</span>。整張 <span class="n">1220</span> 寬要橫切，線軌用 <span class="n">2200</span></dd>
+    <dt>出料桌</dt><dd><span class="n">680 × 600</span>，可以直接用木工桌模組墊到同高</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>45° 推台</h2>
+  <p class="use">角材做框、桌腳接角用。左右各切一刀，兩支合起來剛好 90°。</p>
+  <figure>
+    <svg viewBox="0 0 720 380" role="img" aria-label="45 度推台俯視圖：底板上兩片擋板互成 90 度，尖端朝前對準鋸路，角材靠在擋板外側">
+      <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="saw" x="250" y="60" width="272" height="260"/>
+      <rect class="ply" x="240" y="70" width="240" height="240"/>
+      <rect class="runner" x="304" y="70" width="8" height="240"/>
+      <rect class="runner" x="408" y="70" width="8" height="240"/>
+      <line class="stockline" x1="215" y1="239" x2="380" y2="74"/>
+      <polyline class="fenceline" points="250,230 360,120 470,230"/>
+      <rect class="metal" x="528" y="50" width="16" height="280"/>
+      <text class="lb" x="556" y="84">縱切靠山</text>
+      <line class="kerf" x1="360" y1="70" x2="360" y2="310"/>
+      <line class="blade" x1="360" y1="170" x2="360" y2="260"/>
+      <line class="arrow" x1="630" y1="290" x2="630" y2="110" marker-end="url(#ah3)"/>
+      <text class="lb" x="642" y="204">往前推</text>
+      <text class="lb" x="200" y="190" text-anchor="end">角材靠擋板外側</text>
+      <text class="lb" x="556" y="232">擋板 2 片</text>
+      <text class="lb" x="556" y="250">互成 90°</text>
+      <text class="lb" x="250" y="300">底板 600 × 600</text>
+      <text class="lbm" x="360" y="362" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>兩片擋板的夾角用角尺對到 90° 就好，各自是不是剛好 45° 不重要，左右切出來的誤差會互補。</figcaption>
+  </figure>
+  <dl>
+    <dt>底板</dt><dd>12 mm 夾板，<span class="n">600 × 600</span></dd>
+    <dt>擋板</dt><dd>2 片，高 <span class="n">70</span>、長 <span class="n">400</span>，尖端對準鋸路</dd>
+    <dt>滑條</dt><dd>跟橫切推台同規格 2 支</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>靠山載板</h2>
+  <p class="use">又長又重、邊不直的料修出第一道直邊用。料固定在載板上，載板貼著縱切靠山推。</p>
+  <figure>
+    <svg viewBox="0 0 720 640" role="img" aria-label="靠山載板俯視圖：長料用下壓夾固定在一片夾板載板上，載板的直邊貼著縱切靠山往前推，鋸片切掉料左邊的毛邊">
+      <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="saw" x="280" y="240" width="170" height="162"/>
+      <rect class="ply" x="349" y="40" width="104" height="550"/>
+      <rect class="stock" x="343" y="65" width="75" height="500"/>
+      <rect class="metal" x="453" y="225" width="10" height="192"/>
+      <rect class="stop" x="400" y="150" width="44" height="8"/>
+      <rect class="stop" x="400" y="470" width="44" height="8"/>
+      <rect class="fence" x="349" y="565" width="104" height="12"/>
+      <text class="lb" x="475" y="575">尾擋角材，頂住料尾</text>
+      <line class="kerf" x1="348" y1="40" x2="348" y2="590"/>
+      <line class="blade" x1="348" y1="290" x2="348" y2="350"/>
+      <line class="arrow" x1="660" y1="520" x2="660" y2="140" marker-end="url(#ah4)"/>
+      <text class="lb" x="650" y="330" text-anchor="end">往前推</text>
+      <text class="lb" x="330" y="110" text-anchor="end">要切的料 2000 × 300 × 55</text>
+      <text class="lb" x="330" y="200" text-anchor="end">鋸路左邊是切掉的毛邊</text>
+      <text class="lbm" x="272" y="394" text-anchor="end">檯鋸檯面</text>
+      <text class="lb" x="475" y="80">載板 12 mm 夾板</text>
+      <text class="lb" x="475" y="98">直邊貼著靠山走</text>
+      <text class="lb" x="475" y="158">下壓夾</text>
+      <text class="lb" x="475" y="250">縱切靠山（原廠）</text>
+      <text class="lb" x="475" y="478">下壓夾</text>
+      <text class="lbm" x="360" y="624" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>靠山只認載板那道直邊，料本身彎不彎都沒關係。第一道直邊切出來後，把料拿下來，直邊直接貼靠山切另一邊。</figcaption>
+  </figure>
+  <dl>
+    <dt>載板</dt><dd>12 mm 夾板，寬約 <span class="n">400</span>，長度比料多 <span class="n">200</span>，貼靠山那邊用原廠裁的直邊</dd>
+    <dt>尾擋</dt><dd>載板靠身那端鎖一支角材。料的尾端先切平，頂著尾擋，推載板時尾擋就帶著料走</dd>
+    <dt>固定</dt><dd>載板上埋 T 軌，下壓夾把料壓住。料夠重、躺得穩時，只靠尾擋用手推也可以</dd>
+    <dt>切得到</dt><dd>料厚 <span class="n">65</span> 以內（切深 77 扣掉載板 12）</dd>
+    <dt>支撐</dt><dd>進料端和出料端各放一個與檯面同高的托架</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>切薄片</h2>
+  <p class="use">切封邊條、木片這種幾 mm 厚的薄料用。薄片落在鋸片左邊，不夾在鋸片和靠山中間。</p>
+  <figure>
+    <svg viewBox="0 0 720 440" role="img" aria-label="切薄片俯視圖：定位器卡在鋸片左邊的凹槽，軸承頂住料的左邊，靠山貼住料的右邊，薄片落在鋸片左側">
+      <defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="saw" x="200" y="70" width="320" height="280"/>
+      <line class="slot" x1="270" y1="70" x2="270" y2="350"/>
+      <line class="slot" x1="390" y1="70" x2="390" y2="350"/>
+      <rect class="ply" x="312" y="130" width="36" height="170"/>
+      <rect class="stock" x="324" y="285" width="106" height="130"/>
+      <rect class="fence" x="372" y="330" width="22" height="85"/>
+      <rect class="metal" x="430" y="60" width="16" height="300"/>
+      <text class="lb" x="456" y="200">零間隙喉板</text>
+      <text class="lbm" x="456" y="218">鋸片旁邊那塊淺色板</text>
+      <text class="lb" x="456" y="390">推塊，壓著料推</text>
+      <rect class="runner" x="266" y="290" width="8" height="56"/>
+      <rect class="fence" x="258" y="306" width="54" height="18"/>
+      <circle class="stop" cx="318" cy="315" r="6"/>
+      <line class="kerf" x1="330" y1="70" x2="330" y2="415"/>
+      <line class="blade" x1="330" y1="160" x2="330" y2="260"/>
+      <line class="arrow" x1="640" y1="380" x2="640" y2="150" marker-end="url(#ah5)"/>
+      <text class="lb" x="630" y="270" text-anchor="end">往前推</text>
+      <text class="lb" x="250" y="300" text-anchor="end">薄片定位器</text>
+      <text class="lbm" x="250" y="318" text-anchor="end">滑條卡在左邊凹槽</text>
+      <text class="lb" x="250" y="344" text-anchor="end">軸承頂住料的左邊</text>
+      <text class="lb" x="318" y="200" text-anchor="end">薄片從這側出來</text>
+      <text class="lb" x="456" y="110">縱切靠山</text>
+      <text class="lbm" x="456" y="128">每切一片往左移一次</text>
+      <text class="lb" x="456" y="340">料</text>
+      <text class="lbm" x="212" y="90">檯鋸檯面</text>
+      <text class="lbm" x="360" y="434" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>軸承到鋸片左側的距離就是薄片厚度。定位器固定不動，每一片厚度都一樣。</figcaption>
+  </figure>
+  <dl>
+    <dt>定位器</dt><dd>一小段滑條卡在左邊凹槽，上面鎖一支木臂，尖端裝一顆軸承</dd>
+    <dt>調厚度</dt><dd>軸承尖端到鋸片左側的距離＝薄片厚度，鎖緊後整批都不再動</dd>
+    <dt>切法</dt><dd>料的左邊頂住軸承，靠山推過來貼緊料的右邊再鎖住，然後切。切完一片，靠山往左移，重複</dd>
+    <dt>定位器位置</dt><dd>放在鋸片前面、靠操作者這側，不要跟鋸片並排</dd>
+    <dt>喉板</dt><dd>換成縫隙只有鋸片寬的自製喉板，薄片才不會掉進去</dd>
+    <dt>只切幾片</dt><dd>薄片留在靠山那側，用一塊 L 形木推塊整塊壓著料推過去，推塊會被鋸到</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>立面切</h2>
+  <p class="use">料立起來切。板子側立剖成兩片薄板，或料直立切榫頭。</p>
+  <figure>
+    <svg viewBox="0 0 720 370" role="img" aria-label="立面切正視圖兩張：左邊是板材側立貼著加高靠山剖板，右邊是料直立夾在騎靠山的治具上切榫頭">
+      <text class="lb" x="40" y="40">剖板</text>
+      <rect class="tbl" x="40" y="300" width="300" height="14"/>
+      <rect class="stock" x="175" y="160" width="30" height="140"/>
+      <rect class="fence" x="205" y="120" width="18" height="180"/>
+      <rect class="metal" x="223" y="235" width="40" height="65"/>
+      <rect class="ply" x="85" y="282" width="90" height="18"/>
+      <line class="kerf" x1="190" y1="160" x2="190" y2="230"/>
+      <line class="blade" x1="190" y1="230" x2="190" y2="300"/>
+      <text class="lb" x="168" y="180" text-anchor="end">板子側立</text>
+      <text class="lb" x="168" y="215" text-anchor="end">翻面切第二刀</text>
+      <text class="lb" x="168" y="255" text-anchor="end">第一刀切深 70</text>
+      <text class="lb" x="130" y="336" text-anchor="middle">羽毛板</text>
+      <text class="lb" x="230" y="135">加高靠山 高 180</text>
+      <text class="lb" x="270" y="272">原廠靠山</text>
+      <text class="lb" x="400" y="40">切榫頭</text>
+      <rect class="tbl" x="400" y="300" width="290" height="14"/>
+      <rect class="stock" x="510" y="100" width="40" height="200"/>
+      <rect class="fence" x="550" y="80" width="18" height="220"/>
+      <rect class="ply" x="568" y="217" width="90" height="18"/>
+      <rect class="ply" x="568" y="235" width="32" height="65"/>
+      <rect class="ply" x="640" y="235" width="18" height="65"/>
+      <rect class="metal" x="600" y="235" width="40" height="65"/>
+      <rect class="stop" x="500" y="150" width="50" height="8"/>
+      <line class="blade" x1="520" y1="250" x2="520" y2="300"/>
+      <text class="lb" x="494" y="120" text-anchor="end">料直立</text>
+      <text class="lb" x="494" y="160" text-anchor="end">夾具夾住</text>
+      <text class="lb" x="494" y="280" text-anchor="end">切榫頭的面</text>
+      <text class="lb" x="576" y="95">立板 高 220</text>
+      <text class="lb" x="576" y="205">ㄇ形座騎在靠山上</text>
+      <text class="lb" x="620" y="336" text-anchor="middle">原廠靠山</text>
+      <text class="lbm" x="360" y="362" text-anchor="middle">兩張都是從操作者這側看過去</text>
+    </svg>
+    <figcaption>左邊剖板：板子靠加高靠山，羽毛板把它壓向靠山。右邊切榫頭：料夾在治具的立板上，整個治具沿著靠山推。</figcaption>
+  </figure>
+  <dl>
+    <dt>加高靠山</dt><dd>18 mm 夾板，高 <span class="n">180</span>、長 <span class="n">700</span>，夾在原廠靠山上</dd>
+    <dt>剖板</dt><dd>一刀切深 <span class="n">77</span>。板寬 <span class="n">150</span> 以內，翻面切兩刀剖開</dd>
+    <dt>羽毛板</dt><dd>放在鋸片前面，把板子壓向靠山</dd>
+    <dt>榫頭治具</dt><dd>一片立板加一個騎在靠山上的ㄇ形座，料用夾具夾在立板上。ㄇ形座的內寬照靠山實際寬度做</dd>
+    <dt>斜角插片槽</dt><dd>立板換成 45° 的 V 形托架，一樣騎在靠山上推</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>定長墊塊</h2>
+  <p class="use">短料要連切很多支同長度用。靠山不直接當長度擋，中間墊一塊。</p>
+  <figure>
+    <svg viewBox="0 0 720 410" role="img" aria-label="定長墊塊俯視圖：墊塊夾在靠山上、鋸片前面，料的右端頂住墊塊定長度，再用斜切規推過鋸片">
+      <defs><marker id="ah6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="saw" x="200" y="70" width="320" height="270"/>
+      <line class="slot" x1="270" y1="70" x2="270" y2="340"/>
+      <line class="slot" x1="390" y1="70" x2="390" y2="340"/>
+      <rect class="runner" x="266" y="312" width="8" height="70"/>
+      <rect class="fence" x="180" y="312" width="142" height="12"/>
+      <rect class="stock" x="150" y="290" width="268" height="22"/>
+      <rect class="stop" x="418" y="280" width="22" height="55"/>
+      <rect class="metal" x="440" y="60" width="16" height="290"/>
+      <line class="kerf" x1="330" y1="70" x2="330" y2="340"/>
+      <line class="blade" x1="330" y1="150" x2="330" y2="250"/>
+      <line class="arrow" x1="90" y1="340" x2="90" y2="150" marker-end="url(#ah6)"/>
+      <text class="lb" x="80" y="250" text-anchor="end">往前推</text>
+      <text class="lb" x="160" y="282">料</text>
+      <text class="lb" x="170" y="350" text-anchor="end">斜切規</text>
+      <text class="lb" x="466" y="110">縱切靠山</text>
+      <text class="lb" x="466" y="296">墊塊，夾在靠山上</text>
+      <text class="lbm" x="466" y="314">位置在鋸片前面</text>
+      <text class="lbm" x="212" y="90">檯鋸檯面</text>
+      <text class="lbm" x="360" y="402" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>料頂住墊塊時還沒碰到鋸片。往前推，料離開墊塊後才進鋸片，切下來那段和靠山之間有墊塊厚度的空隙。</figcaption>
+  </figure>
+  <dl>
+    <dt>墊塊</dt><dd>一塊厚 <span class="n">25</span> 到 <span class="n">30</span> 的方正木塊，用夾子夾在靠山上</dd>
+    <dt>位置</dt><dd>整塊都在鋸片前面、靠操作者這側，料碰到鋸片前就要離開它</dd>
+    <dt>長度怎麼定</dt><dd>靠山刻度減掉墊塊厚度。墊塊做成整數厚度比較好算</dd>
+    <dt>推的工具</dt><dd>原廠斜切規或橫切推台都可以</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>錐度切</h2>
+  <p class="use">桌腳、椅腳這種一頭粗一頭細的斜邊。用靠山載板，把料斜著夾。</p>
+  <figure>
+    <svg viewBox="0 0 720 520" role="img" aria-label="錐度切俯視圖：桌腳斜著夾在載板上，載板直邊貼著靠山往前推，鋸片切掉靠操作者那頭的斜片">
+      <defs><marker id="ah7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <rect class="saw" x="280" y="180" width="170" height="162"/>
+      <rect class="ply" x="349" y="60" width="104" height="400"/>
+      <polygon class="stock" points="360,90 385,90 363,430 338,430"/>
+      <rect class="metal" x="453" y="165" width="10" height="192"/>
+      <rect class="stop" x="376" y="150" width="64" height="8"/>
+      <rect class="stop" x="366" y="370" width="74" height="8"/>
+      <rect class="fence" x="349" y="430" width="60" height="12"/>
+      <line class="kerf" x1="348" y1="60" x2="348" y2="460"/>
+      <line class="blade" x1="348" y1="230" x2="348" y2="290"/>
+      <line class="arrow" x1="660" y1="420" x2="660" y2="140" marker-end="url(#ah7)"/>
+      <text class="lb" x="650" y="290" text-anchor="end">往前推</text>
+      <text class="lb" x="328" y="120" text-anchor="end">桌腳斜著夾</text>
+      <text class="lb" x="328" y="390" text-anchor="end">鋸路左邊這片切掉</text>
+      <text class="lbm" x="272" y="334" text-anchor="end">檯鋸檯面</text>
+      <text class="lb" x="475" y="80">載板，直邊貼靠山</text>
+      <text class="lb" x="475" y="158">下壓夾</text>
+      <text class="lb" x="475" y="250">縱切靠山（原廠）</text>
+      <text class="lb" x="475" y="378">下壓夾</text>
+      <text class="lb" x="475" y="440">尾擋</text>
+      <text class="lbm" x="360" y="508" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>載板走直線，料是斜的，所以切出來是斜邊。斜多少，看料尾往鋸路外面偏出多少。</figcaption>
+  </figure>
+  <dl>
+    <dt>載板</dt><dd>跟靠山載板同一片就可以，短料另外做一片 <span class="n">900</span> 長的比較順手</dd>
+    <dt>定角度</dt><dd>在料上畫好斜線，把斜線對齊載板左邊的直邊再夾緊</dd>
+    <dt>同角度連切</dt><dd>載板上鎖兩顆定位塊頂住料的側邊，四支腳放上去位置都一樣</dd>
+    <dt>相鄰兩面都要斜</dt><dd>先切一面，轉 90° 再切。第二面切的時候，切掉的那片墊回去讓料躺平</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>指接榫</h2>
+  <p class="use">盒子、抽屜四個角的梳齒接合。板子直立，一刀切一個槽，靠定位銷決定間距。</p>
+  <figure>
+    <svg viewBox="0 0 720 320" role="img" aria-label="指接榫正視圖：板子直立靠著背板，切好的槽套在定位銷上，鋸片在旁邊切下一個槽">
+      <rect class="tbl" x="120" y="260" width="480" height="14"/>
+      <rect class="fence" x="200" y="140" width="320" height="120"/>
+      <rect class="stock" x="250" y="40" width="180" height="220"/>
+      <rect class="fence" x="390" y="236" width="20" height="24"/>
+      <rect class="stop" x="350" y="236" width="20" height="24"/>
+      <rect class="bl2" x="310" y="236" width="20" height="24"/>
+      <text class="lb" x="240" y="100" text-anchor="end">板子直立</text>
+      <text class="lb" x="530" y="170">背板</text>
+      <text class="lbm" x="530" y="188">鎖在推台擋板或斜切規上</text>
+      <text class="lb" x="326" y="298" text-anchor="end">鋸片正在切的槽</text>
+      <text class="lb" x="346" y="298">定位銷，跟槽一樣寬</text>
+      <text class="lb" x="440" y="232">切好的槽</text>
+    </svg>
+    <figcaption>從鋸片這側看過去。鋸片到定位銷的距離等於一個齒寬。切完一槽，把槽套到定位銷上，再切下一槽。</figcaption>
+  </figure>
+  <dl>
+    <dt>背板</dt><dd>18 mm 夾板，高 <span class="n">120</span>、長 <span class="n">400</span>，鎖在橫切推台的靠身擋板前面</dd>
+    <dt>定位銷</dt><dd>硬木條，寬度跟槽寬一樣，嵌在背板底部往前伸出</dd>
+    <dt>槽寬</dt><dd>單片鋸片的槽寬就是鋸路寬，約 <span class="n">3</span>。要寬齒就每個槽多切幾刀，或裝開槽刀</dd>
+    <dt>鋸片高度</dt><dd>等於板厚，多 <span class="n">0.5</span> 讓齒稍微凸出，膠合後再磨平</dd>
+    <dt>調鬆緊</dt><dd>背板用長孔鎖，往左右微調定位銷到鋸片的距離。太緊就往鋸片靠，太鬆就遠離</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>企口和開槽</h2>
+  <p class="use">板邊切掉一角做搭接，或板面上切一道槽嵌背板、層板。鋸片不切穿。</p>
+  <figure>
+    <svg viewBox="0 0 720 280" role="img" aria-label="企口正視圖：板子平放，板邊貼著夾在靠山上的犧牲木面，鋸片升到板厚一半切掉板邊下面一角">
+      <rect class="tbl" x="100" y="220" width="520" height="14"/>
+      <polygon class="stock" points="180,166 400,166 400,193 370,193 370,220 180,220"/>
+      <rect class="fence" x="400" y="60" width="36" height="160"/>
+      <rect class="metal" x="436" y="100" width="80" height="120"/>
+      <rect class="stop" x="394" y="193" width="9" height="27"/>
+      <text class="lb" x="170" y="198" text-anchor="end">板子平放</text>
+      <text class="lb" x="385" y="258" text-anchor="middle">鋸片切掉板邊下面這一角</text>
+      <text class="lb" x="446" y="80">犧牲木面，夾在靠山上</text>
+      <text class="lb" x="526" y="165">原廠靠山</text>
+    </svg>
+    <figcaption>從操作者這側看過去。鋸片貼著犧牲木面，就算吃進去一點也只鋸到木頭，不會碰到原廠靠山。</figcaption>
+  </figure>
+  <dl>
+    <dt>犧牲木面</dt><dd>18 mm 夾板或實木，高 <span class="n">90</span>，夾在原廠靠山上</dd>
+    <dt>企口</dt><dd>鋸片升到要的深度，靠山一次移一個鋸路寬，多切幾刀把那一角清掉</dd>
+    <dt>板面開槽</dt><dd>靠山定槽的位置，切一刀後靠山移一點再切，切到要的槽寬</dd>
+    <dt>開槽刀</dt><dd>裝得上的話一刀到位。歐亞版的軸通常不夠長，要量你那台的軸長才知道</dd>
+    <dt>壓料</dt><dd>鋸片埋在料下面看不到，用推塊從上面壓著推，手不要經過鋸片上方</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>修邊機洗 T 軌槽</h2>
+  <p class="use">在板子中間埋 30 型 T 軌用。兩支 L 鋁材剛好夾住修邊機底座，槽要多寬就用墊片把整個框往旁邊挪。</p>
+  <figure>
+    <svg viewBox="0 0 720 290" role="img" aria-label="洗 T 軌槽的斷面圖：兩支 L 鋁材夾住修邊機底座，框的左邊靠著夾在板子上的基準直條，直刀在板子上洗出 30 寬的槽的第一刀">
+      <rect class="ply" x="40" y="200" width="640" height="36"/>
+      <rect class="tbl" x="330" y="200" width="60" height="26"/>
+      <rect class="fence" x="56" y="164" width="120" height="36"/>
+      <rect class="metal" x="236" y="140" width="6" height="60"/>
+      <rect class="metal" x="176" y="194" width="60" height="6"/>
+      <rect class="metal" x="442" y="140" width="6" height="60"/>
+      <rect class="metal" x="448" y="194" width="60" height="6"/>
+      <rect class="metal" x="242" y="184" width="200" height="16"/>
+      <rect class="metal" x="282" y="60" width="120" height="124"/>
+      <rect class="stop" x="330" y="200" width="24" height="26"/>
+      <text class="lb" x="116" y="156" text-anchor="middle">基準直條</text>
+      <text class="lb" x="206" y="132" text-anchor="middle">L 鋁材</text>
+      <text class="lb" x="478" y="132" text-anchor="middle">L 鋁材</text>
+      <text class="lb" x="342" y="50" text-anchor="middle">修邊機</text>
+      <text class="lb" x="176" y="262" text-anchor="middle">墊片塞這條縫</text>
+      <text class="lb" x="322" y="262" text-anchor="end">12 mm 直刀</text>
+      <text class="lb" x="398" y="262">槽寬 30、深 13.1</text>
+      <text class="lb" x="670" y="224" text-anchor="end">板子</text>
+    </svg>
+    <figcaption>從槽的一端看過去，這是第一刀。框靠著基準直條，洗出槽最左邊的 12。之後在基準直條和框中間塞墊片，框往右挪，再洗下一刀。</figcaption>
+  </figure>
+  <dl>
+    <dt>框</dt><dd>L 鋁材 2 支，厚 <span class="n">2</span> 以上、立面 <span class="n">20</span> 以上，比槽長 <span class="n">200</span> 以上。平的那面朝外貼板子，立的那面給底座靠。兩端各鎖一塊木角材固定寬度</dd>
+    <dt>框的寬度</dt><dd>把底座夾在兩支鋁材中間，墊一張紙當間隙，再鎖木角材</dd>
+    <dt>基準直條</dt><dd>一支直的木條夾在板子上，整個過程不動</dd>
+    <dt>墊片</dt><dd>最後一刀的墊片厚＝槽寬－刀徑。<span class="n">30</span> 的槽、<span class="n">12</span> 的刀：第一刀不塞，第二刀塞 <span class="n">9</span>，第三刀塞 <span class="n">18</span></dd>
+    <dt>刀</dt><dd>6 mm 柄直刀，刃徑 <span class="n">12</span></dd>
+    <dt>深度</dt><dd>總深 <span class="n">13.1</span>，分三次下，每次 4 到 5</dd>
+    <dt>先試</dt><dd>在廢料上洗一段，拿 T 軌塞進去試鬆緊。太緊就在最後那片墊片上貼一層紙膠帶</dd>
+    <dt>靠板邊的槽</dt><dd>不用治具，裝機器附的側導板貼著板邊推</dd>
+  </dl>
+</section>
+
+<p class="note">鋸片和溝槽在檯面上的位置是示意。官方手冊沒標溝槽寬深和槽距，滑條和底板開工前要量實機。</p>
+</div>
+
+</body>
+</html>
