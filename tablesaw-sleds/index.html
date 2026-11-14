@@ -362,7 +362,8 @@ dd{margin:0;min-width:0}
   };
   function drillScene(corner){
     var r=new T.Group(), J=new T.Group(), D=new T.Group(); r.add(J); r.add(D);
-    var HX=0, HZ=120, TOP=36, rb=corner?5:1.5, LX=corner?131.3:0;
+    var HZ=110, TOP=36, rb=corner?5:1.5, LX=corner?131.3:0, ED=150-HZ;
+    var XS=corner?[-100,-20,60,140]:[-140,-60,20,100];
     box(r,mat.cab,-420,420,-60,0,-300,300);
     box(r,mat.ply,-250,250,0,TOP,-150,150);
     var sh=new T.Shape(); sh.moveTo(0,-30); sh.lineTo(150,-30); sh.lineTo(120,0); sh.lineTo(150,30); sh.lineTo(0,30); sh.lineTo(0,-30);
@@ -372,29 +373,34 @@ dd{margin:0;min-width:0}
       var pg=new T.BoxGeometry(42.4,36,3), pm=new T.Mesh(pg,mat.metal); outline(pm,pg);
       pm.position.set(136.06,18,q[0]); pm.rotation.y=q[1]; J.add(pm); });
     var tube=new T.Mesh(new T.CylinderGeometry(3.2,3.2,36,24),mat.brass); tube.position.set(0,18,0); J.add(tube);
-    box(J,mat.ply,0,150,-26,36,30,42);
+    box(J,mat.ply,20,110,36,48,-5,ED+12);
+    box(J,mat.ply,20,110,-26,36,ED,ED+12);
+    [40,90].forEach(function(x){
+      box(J,mat.dark,x-3.25,x+3.25,48,48.6,0,30);
+      var kb=new T.Mesh(new T.CylinderGeometry(13,13,12,8),mat.dark); kb.position.set(x,54,15); J.add(kb); });
     function dc(m,rad,y0,y1){ var o=new T.Mesh(new T.CylinderGeometry(rad,rad,y1-y0,28),m); o.position.y=(y0+y1)/2; D.add(o); return o; }
     dc(mat.blade,rb,0,95); dc(mat.dark,14,95,130); dc(mat.body,27,130,235);
     box(D,mat.body,-17,17,150,200,20,140); box(D,mat.dark,-30,30,140,210,140,185);
-    var hole=new T.Mesh(new T.CylinderGeometry(rb,rb,0.6,24),mat.dark); hole.position.set(HX,TOP+0.3,HZ); r.add(hole);
-    var pilot=null;
-    if(corner){ pilot=new T.Mesh(new T.CylinderGeometry(1.5,1.5,0.6,16),mat.dark); pilot.position.set(HX,TOP+0.3,HZ); r.add(pilot); }
+    var holes=XS.map(function(x){ var h=new T.Mesh(new T.CylinderGeometry(rb,rb,0.6,24),mat.dark); h.position.set(x,TOP+0.3,HZ); r.add(h); return h; });
+    var pilots=corner?XS.map(function(x){ var h=new T.Mesh(new T.CylinderGeometry(1.5,1.5,0.6,16),mat.dark); h.position.set(x,TOP+0.3,HZ); r.add(h); return h; }):[];
     var deep=corner?8:10, y0=TOP+(corner?0:36);
     function anim(u){
-      var y, lift=0;
-      if(u<0.2) y=200-(200-y0)*ease(u/0.2);
-      else if(u<0.6) y=y0-(y0-deep)*((u-0.2)/0.4);
-      else if(u<0.8) y=deep+(200-deep)*ease((u-0.6)/0.2);
-      else { y=200; lift=ease((u-0.8)/0.15>1?1:(u-0.8)/0.15)*120; }
-      D.position.set(HX,y,HZ);
-      J.position.set(HX-LX,TOP+lift,HZ);
-      hole.visible=u>=0.2+(corner?0.02:0.2);
-      if(pilot) pilot.visible=!hole.visible;
+      var n=XS.length, k=Math.min(n-1,Math.floor(u*n)), s=u*n-k, x, y;
+      var prev=k>0?XS[k-1]:XS[0]-80;
+      if(s<0.2){ x=prev+(XS[k]-prev)*ease(s/0.2); y=200; }
+      else { x=XS[k];
+        if(s<0.35) y=200-(200-y0)*ease((s-0.2)/0.15);
+        else if(s<0.7) y=y0-(y0-deep)*((s-0.35)/0.35);
+        else if(s<0.9) y=deep+(200-deep)*ease((s-0.7)/0.2);
+        else y=200; }
+      D.position.set(x,y,HZ);
+      J.position.set(x-LX,TOP,HZ);
+      holes.forEach(function(h,i){ h.visible=i<k||(i===k&&s>=(corner?0.37:0.55)); if(pilots[i]) pilots[i].visible=!h.visible; });
     }
-    return {r:r,g:D,b:new T.Group(),nosaw:true,anim:anim,cam:[520,470,760],tgt:[0,70,110],
+    return {r:r,g:D,b:new T.Group(),nosaw:true,anim:anim,cam:[430,520,820],tgt:[0,50,90],
       cap:corner
-        ?'導引塊另一端切 90 度缺口，缺口裡鎖鐵角碼。大鑽頭靠在鐵角的內角，兩個面一起擋住，鑽頭就不會歪。適合 6 以上的鑽頭。'
-        :'導引塊端頭黏一支內徑 3 的黃銅管，3 mm 鑽頭穿過銅管往下鑽。銅管和鑽頭之間沒有間隙，位置和垂直一次到位。前面的擋板扣住板邊。'};
+        ?'導引塊另一端切 90 度缺口，缺口裡鎖鐵角碼。大鑽頭靠在鐵角的內角，兩個面一起擋住，鑽頭就不會歪。適合 6 以上的鑽頭。擋板扣住板邊，沿著邊一路鑽，每個孔離邊一樣遠。'
+        :'導引塊端頭黏一支內徑 3 的黃銅管，3 mm 鑽頭穿過銅管往下鑽。銅管和鑽頭之間沒有間隙，位置和垂直一次到位。L 形擋板用兩顆旋鈕鎖在頂面，扣住板邊，沿著邊一路鑽一整排。'};
   }
   build.dtube=function(){ return drillScene(false); };
   build.dcorner=function(){ return drillScene(true); };
@@ -949,26 +955,40 @@ dd{margin:0;min-width:0}
   <h2>垂直鑽孔導引塊</h2>
   <p class="use">沒有鑽床時用手電鑽鑽直孔。一塊導引塊兩端各一種導引：一端銅管鑽 3 mm 小孔，一端鐵角扶大鑽頭。</p>
   <figure>
-    <svg viewBox="0 0 720 300" role="img" aria-label="垂直鑽孔導引塊的俯視圖：長方木塊左端中間嵌一支黃銅管，右端切 90 度缺口並鎖上鐵角碼，大鑽頭靠在鐵角內角，下緣一片擋板扣住板邊">
+    <svg viewBox="0 0 720 350" role="img" aria-label="垂直鑽孔導引塊的俯視圖：長方木塊左端中間嵌一支黃銅管，右端切 90 度缺口並鎖上鐵角碼；L 形擋板疊在頂面，開兩條長孔用旋鈕鎖住，前緣往下扣住板邊，滑動擋板就能調孔到板邊的距離">
       <polygon class="fence" points="135,50 585,50 495,140 585,230 135,230"/>
       <polygon class="metal" points="585,50 495,140 585,230 585,217.3 507.7,140 585,62.7"/>
       <circle class="stop" cx="529" cy="140" r="15"/>
       <circle class="metal" cx="135" cy="140" r="7"/>
       <circle class="stop" cx="135" cy="140" r="4"/>
-      <rect class="ply" x="135" y="230" width="450" height="20"/>
+      <defs><marker id="ah8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="ah8s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="currentColor"/></marker></defs>
+      <rect class="ply" x="195" y="125" width="270" height="171" fill-opacity=".9"/>
+      <rect class="ply" x="195" y="260" width="270" height="36"/>
+      <rect class="slot" x="245" y="140" width="20" height="90" rx="10"/>
+      <rect class="slot" x="395" y="140" width="20" height="90" rx="10"/>
+      <circle class="metal" cx="255" cy="185" r="17"/>
+      <circle class="metal" cx="405" cy="185" r="17"/>
+      <line class="kerf" x1="40" y1="260" x2="680" y2="260"/>
+      <line class="arrow" x1="105" y1="146" x2="105" y2="254" marker-end="url(#ah8)" marker-start="url(#ah8s)"/>
       <text class="lb" x="120" y="144" text-anchor="end">黃銅管 內徑 3</text>
+      <text class="lb" x="96" y="205" text-anchor="end">可調</text>
       <text class="lb" x="600" y="100">鐵角碼</text>
       <text class="lb" x="556" y="144">大鑽頭靠在內角</text>
-      <text class="lb" x="330" y="144" text-anchor="middle">本體 150 × 60，厚 36</text>
-      <text class="lb" x="360" y="272" text-anchor="middle">擋板，扣住板邊</text>
+      <text class="lb" x="330" y="88" text-anchor="middle">本體 150 × 60，厚 36</text>
+      <text class="lb" x="330" y="119" text-anchor="middle">兩條 M6 長孔＋旋鈕</text>
+      <text class="lb" x="480" y="284">L 形擋板前緣往下扣住板邊</text>
+      <text class="lbm" x="680" y="252" text-anchor="end">工件板邊</text>
     </svg>
-    <figcaption>從上面往下看。左端的銅管給 3 mm 鑽頭穿過去；右端的鐵角給大鑽頭靠。擋板讓孔到板邊的距離固定。</figcaption>
+    <figcaption>從上面往下看。左端的銅管給 3 mm 鑽頭穿過去；右端的鐵角給大鑽頭靠。擋板疊在頂面，鬆開旋鈕前後滑動，就是在調孔到板邊的距離；鎖緊後沿著板邊鑽一整排，每個孔離邊一樣遠。</figcaption>
   </figure>
   <dl>
     <dt>本體</dt><dd>兩層 18 mm 夾板膠合成 <span class="n">36</span> 厚，裁 <span class="n">150 × 60</span>。厚度就是導引長度</dd>
     <dt>銅管端</dt><dd>外徑 <span class="n">4</span>、內徑 <span class="n">3</span> 的黃銅管，長 <span class="n">36</span>。端面鋸一道淺溝，用瞬間膠黏進去，黏之前拿角尺從兩個方向對垂直</dd>
     <dt>鐵角端</dt><dd>切 90 度缺口，鎖一片鐵角碼。<span class="n">6</span> 以上的鑽頭才靠這端，小鑽頭會卡在鐵角內角的圓弧裡晃</dd>
-    <dt>擋板</dt><dd>側面鎖一片薄板，比本體底面低 <span class="n">20</span> 以上，扣住工件板邊，也方便用夾子夾</dd>
+    <dt>擋板</dt><dd>12 mm 夾板做成 L 形：上片疊在本體頂面，下片往下垂，比本體底面低 <span class="n">20</span> 以上，扣住工件板邊</dd>
+    <dt>長孔</dt><dd>上片開兩條 M6 長孔，寬 <span class="n">6.5</span>、長 <span class="n">30</span>，方向跟板邊垂直，兩條相隔 <span class="n">50</span>。只開一條會繞著螺絲轉，90 度就跑掉</dd>
+    <dt>螺絲</dt><dd>本體兩片合板黏合前，在下片挖六角凹槽嵌 M6 螺帽，包在中間。頂面用 M6 公牙手擰螺絲鎖。本體已黏好就改轉 M6 木用牙套</dd>
+    <dt>鑽一整排</dt><dd>量好板邊到孔中心的距離，鎖緊兩顆旋鈕。孔距在板上畫線，導引塊沿板邊滑過去對線再鑽</dd>
     <dt>止滑</dt><dd>底面貼砂紙</dd>
     <dt>大孔</dt><dd>先用銅管端鑽 3 mm 導孔定位置，再換鐵角端用大鑽頭順著導孔鑽</dd>
   </dl>
