@@ -193,9 +193,6 @@ dd{margin:0;min-width:0}
     },
     short:function(){
       var r=new T.Group(), g=new T.Group(); r.add(g);
-      box(r,mat.metal,540,930,-45,-15,340,365);
-      box(r,mat.metal,540,930,-45,-15,-365,-340);
-      box(r,mat.ply,415,930,-15,0,-365,365);
       box(g,mat.ply,-350,850,0,12,-150,150);
       box(g,mat.metal,-139,-121,-9,0,-150,150);
       box(g,mat.metal,121,139,-9,0,-150,150);
@@ -208,7 +205,7 @@ dd{margin:0;min-width:0}
       prism(g,mat.stock,clip(pts,false),12,48);
       var b=prism(g,mat.stock,clip(pts,true),12,48);
       return {r:r,g:g,b:b,dir:-1,nofence:true,start:60,end:-200,cutAt:-150,cam:[-400,1600,-1500],tgt:[280,-60,0],
-        cap:'底板 1200 × 300，鋸路偏左：左邊 350、右邊 850。縱切靠山拔掉，兩條軌道往右拉出來，上面架一片墊板撐住推台右邊。寸二寸八粗切成約 760 一段，修平一端後頂住右邊紅色止擋推過鋸片，每支都是 730。'};
+        cap:'底板 1200 × 300，鋸路偏左：左邊 350、右邊 850。縱切靠山拔掉，推台右邊直接伸出去，重心還在檯面上不用撐。寸二寸八粗切成約 760 一段，修平一端後頂住右邊紅色止擋推過鋸片，每支都是 730。'};
     },
     panel:function(){
       var r=new T.Group(), g=new T.Group(); r.add(g);
@@ -539,9 +536,9 @@ dd{margin:0;min-width:0}
 
 <section>
   <h2>短推台 1200 × 300</h2>
-  <p class="use">角材段切用，例如寸二寸八切 730。板子只有 30 cm 深，切窄料剛好；鋸路偏左，右邊留 850 給止擋，右邊那段架在縱切靠山的軌道上。</p>
+  <p class="use">角材段切用，例如寸二寸八切 730。板子只有 30 cm 深，切窄料剛好；鋸路偏左，右邊留 850 給止擋，縱切靠山拔掉。</p>
   <figure>
-    <svg viewBox="0 0 720 320" role="img" aria-label="短推台俯視圖：底板寬 1200、深 300，鋸路左邊 350、右邊 850，角材靠前面的靠身擋板，右邊紅色止擋離鋸路 730，檯面右緣以外架在軌道墊板上">
+    <svg viewBox="0 0 720 320" role="img" aria-label="短推台俯視圖：底板寬 1200、深 300，鋸路左邊 350、右邊 850，角材靠前面的靠身擋板，右邊紅色止擋離鋸路 730，右邊伸出檯面">
       <defs><marker id="ah9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="ah9s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="currentColor"/></marker></defs>
       <rect class="ply" x="55.0" y="85.0" width="600" height="150"/>
       <line class="slot" x1="165.0" y1="85.0" x2="165.0" y2="235.0"/>
@@ -554,7 +551,6 @@ dd{margin:0;min-width:0}
       <line class="kerf" x1="230.0" y1="52" x2="230.0" y2="258"/>
       <line class="slot" x1="435.0" y1="110" x2="435.0" y2="185"/>
       <text class="lb" x="441.0" y="135">檯面右緣</text>
-      <text class="lb" x="441.0" y="153">右邊架在軌道墊板上</text>
       <line class="arrow" x1="55.0" y1="34" x2="228.0" y2="34" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
       <text class="lb" x="141.5" y="28" text-anchor="middle">350</text>
       <line class="arrow" x1="232.0" y1="34" x2="655.0" y2="34" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
@@ -581,11 +577,10 @@ dd{margin:0;min-width:0}
     <dt>後擋板</dt><dd>厚 <span class="n">36</span>、高 <span class="n">70</span>，把鋸開的左右兩半連在一起</dd>
     <dt>T 軌</dt><dd>小 T 軌埋在靠身擋板頂面右邊，長 <span class="n">800</span>，止擋可以放到離鋸路約 <span class="n">800</span></dd>
     <dt>滑條</dt><dd>2 支，長 <span class="n">300</span>。位置照實機兩條溝槽量，圖上鋸路左右各 <span class="n">130</span> 是假設</dd>
-    <dt>縱切靠山</dt><dd>拔掉，兩條軌道往右拉出到約 <span class="n">900</span>（從鋸片算）</dd>
-    <dt>軌道墊板</dt><dd>一片夾板架在前後兩條軌道上，頂面要跟檯面一樣平，推台右邊就滑在上面。圖上假設軌道頂比檯面低 <span class="n">15</span>，用直尺跨在檯面上量實際差多少，墊板厚度照量的（不夠就底下黏薄片）。寧可低 1 mm，不要高</dd>
+    <dt>縱切靠山</dt><dd>打開前後卡扣拿下來，軌道不用動</dd>
     <dt>12 尺料</dt><dd>不要整支上推台。先在木工桌用手持圓鋸粗切成約 <span class="n">760</span> 一段，推台上先修平一端，再頂止擋切 <span class="n">730</span>。4 支用掉約 <span class="n">3000</span>，剩約 <span class="n">600</span></dd>
     <dt>切得到</dt><dd>角材寬 <span class="n">200</span> 以內、厚約 <span class="n">60</span> 以內，寸二寸八 36 × 54 沒問題</dd>
-    <dt>懸空</dt><dd>左邊只超出檯面約 <span class="n">80</span>，不用撐；右邊超出約 <span class="n">440</span>，靠軌道墊板撐</dd>
+    <dt>懸空</dt><dd>左邊超出檯面約 <span class="n">80</span>、右邊約 <span class="n">440</span>。推台加角材的重心在鋸路右邊約 <span class="n">250</span>，還在檯面上，不會往右翻，不用另外撐</dd>
   </dl>
 </section>
 
