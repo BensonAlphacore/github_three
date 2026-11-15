@@ -91,7 +91,7 @@ dd{margin:0;min-width:0}
 <section>
   <div class="tabs">
     <button type="button" class="tab" id="tab-cross" data-k="cross" aria-pressed="true">橫切推台</button>
-    <button type="button" class="tab" id="tab-short" data-k="short" aria-pressed="false">短推台 120×30</button>
+    <button type="button" class="tab" id="tab-short" data-k="short" aria-pressed="false">短推台 730 角材</button>
     <button type="button" class="tab" id="tab-panel" data-k="panel" aria-pressed="false">大板推台</button>
     <button type="button" class="tab" id="tab-miter" data-k="miter" aria-pressed="false">45° 推台</button>
     <button type="button" class="tab" id="tab-rip" data-k="rip" aria-pressed="false">靠山載板</button>
@@ -193,19 +193,19 @@ dd{margin:0;min-width:0}
     },
     short:function(){
       var r=new T.Group(), g=new T.Group(); r.add(g);
-      box(g,mat.ply,-600,600,0,12,-150,150);
+      box(g,mat.ply,-850,350,0,12,-150,150);
       box(g,mat.metal,-139,-121,-9,0,-150,150);
       box(g,mat.metal,121,139,-9,0,-150,150);
-      box(g,mat.fence,-600,600,12,82,-150,-114);
-      box(g,mat.fence,-600,600,12,112,114,150);
-      box(g,mat.metal,-590,-30,108,112.5,126,138);
-      box(g,mat.red,-415,-400,12,112,90,114);
-      box(g,mat.red,-415,-400,112,122,90,138);
-      var pts=[[-400,69],[350,69],[350,114],[-400,114]];
-      prism(g,mat.stock,clip(pts,true),12,57);
-      var b=prism(g,mat.stock,clip(pts,false),12,57);
-      return {r:r,g:g,b:b,start:60,end:-200,cutAt:-150,cam:[600,1500,-1400],tgt:[-150,-60,0],
-        cap:'底板 1200 × 300。角材靠著靠身擋板、左端頂住紅色止擋，連推台一起推過鋸片，每支切下來都是 400。止擋沿擋板頂面的 T 軌滑，長度可調。'};
+      box(g,mat.fence,-850,350,12,82,-150,-114);
+      box(g,mat.fence,-850,350,12,112,114,150);
+      box(g,mat.metal,-840,-40,108,112.5,126,138);
+      box(g,mat.red,-745,-730,12,112,90,114);
+      box(g,mat.red,-745,-730,112,122,90,138);
+      var pts=[[-730,60],[30,60],[30,114],[-730,114]];
+      prism(g,mat.stock,clip(pts,true),12,48);
+      var b=prism(g,mat.stock,clip(pts,false),12,48);
+      return {r:r,g:g,b:b,start:60,end:-200,cutAt:-150,fx:500,cam:[400,1600,-1500],tgt:[-280,-60,0],
+        cap:'底板 1200 × 300，鋸路偏右：左邊 850、右邊 350。寸二寸八粗切成約 760 一段，先修平一端，再頂住紅色止擋推過鋸片，每支都是 730。原本的縱切靠山推到最右邊不用。'};
     },
     panel:function(){
       var r=new T.Group(), g=new T.Group(); r.add(g);
@@ -535,43 +535,49 @@ dd{margin:0;min-width:0}
 
 <section>
   <h2>短推台 1200 × 300</h2>
-  <p class="use">角材段切用。板子只有 30 cm 深，切窄料剛好，左右夠寬，長料兩邊都撐得到。</p>
+  <p class="use">角材段切用，例如寸二寸八切 730。板子只有 30 cm 深，切窄料剛好；鋸路偏右，左邊留 850 給止擋。</p>
   <figure>
-    <svg viewBox="0 0 720 320" role="img" aria-label="短推台俯視圖：底板寬 1200、深 300，前後各一支擋板，角材靠前面的靠身擋板，左邊紅色止擋定長度，兩支滑條在鋸路左右各 130">
+    <svg viewBox="0 0 720 320" role="img" aria-label="短推台俯視圖：底板寬 1200、深 300，鋸路左邊 850、右邊 350，角材靠前面的靠身擋板，左邊紅色止擋離鋸路 730，兩支滑條在鋸路左右各 130">
       <defs><marker id="ah9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="ah9s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="currentColor"/></marker></defs>
-      <rect class="ply" x="60.0" y="85.0" width="600" height="150"/>
-      <line class="slot" x1="295.0" y1="85.0" x2="295.0" y2="235.0"/>
-      <line class="slot" x1="425.0" y1="85.0" x2="425.0" y2="235.0"/>
-      <rect class="fence" x="60.0" y="85.0" width="600" height="18"/>
-      <rect class="fence" x="60.0" y="217.0" width="600" height="18"/>
-      <rect class="metal" x="65.0" y="223.0" width="280" height="6"/>
-      <rect class="stock" x="160.0" y="194.5" width="375" height="22.5"/>
-      <rect class="stop" x="152.5" y="205.0" width="7.5" height="24"/>
-      <line class="kerf" x1="360" y1="62" x2="360" y2="258"/>
-      <line class="arrow" x1="60.0" y1="44" x2="660.0" y2="44" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
-      <text class="lb" x="360" y="38" text-anchor="middle">1200</text>
-      <line class="arrow" x1="44" y1="85.0" x2="44" y2="235.0" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
-      <text class="lb" x="36" y="164" text-anchor="end">300</text>
+      <rect class="ply" x="45.0" y="85.0" width="600" height="150"/>
+      <line class="slot" x1="405.0" y1="85.0" x2="405.0" y2="235.0"/>
+      <line class="slot" x1="535.0" y1="85.0" x2="535.0" y2="235.0"/>
+      <rect class="fence" x="45.0" y="85.0" width="600" height="18"/>
+      <rect class="fence" x="45.0" y="217.0" width="600" height="18"/>
+      <rect class="metal" x="50.0" y="223.0" width="400" height="6"/>
+      <rect class="stock" x="105.0" y="190.0" width="380" height="27"/>
+      <rect class="stop" x="97.5" y="205.0" width="7.5" height="24"/>
+      <line class="kerf" x1="470.0" y1="52" x2="470.0" y2="258"/>
+      <line class="arrow" x1="45.0" y1="34" x2="468.0" y2="34" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
+      <text class="lb" x="257.5" y="28" text-anchor="middle">850</text>
+      <line class="arrow" x1="472.0" y1="34" x2="645.0" y2="34" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
+      <text class="lb" x="557.5" y="28" text-anchor="middle">350</text>
+      <line class="arrow" x1="105.0" y1="77.0" x2="468.0" y2="77.0" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
+      <text class="lb" x="287.5" y="71.0" text-anchor="middle">止擋到鋸路 730</text>
+      <line class="arrow" x1="28" y1="85.0" x2="28" y2="235.0" marker-end="url(#ah9)" marker-start="url(#ah9s)"/>
+      <text class="lb" x="20" y="164" text-anchor="end">300</text>
       <line class="arrow" x1="690" y1="250" x2="690" y2="100" marker-end="url(#ah9)"/>
-      <text class="lb" x="700" y="270" text-anchor="end">往前推</text>
-      <text class="lb" x="260.0" y="210.5" text-anchor="middle">角材</text>
-      <text class="lb" x="287.5" y="150" text-anchor="end">滑條</text>
-      <text class="lb" x="432.5" y="150">滑條</text>
-      <text class="lbm" x="368" y="72">鋸路</text>
-      <text class="lb" x="510.0" y="98.0" text-anchor="middle">後擋板 高 70</text>
-      <text class="lb" x="60.0" y="262">靠身擋板 高 100、厚 36，頂面埋小 T 軌</text>
-      <text class="lb" x="60.0" y="284">紅色止擋沿 T 軌滑，離鋸路多遠就切多長</text>
+      <text class="lb" x="704" y="270" text-anchor="end">往前推</text>
+      <text class="lb" x="295.0" y="208.0" text-anchor="middle">寸二寸八</text>
+      <text class="lb" x="397.5" y="150" text-anchor="end">滑條</text>
+      <text class="lb" x="542.5" y="150">滑條</text>
+      <text class="lbm" x="478.0" y="115.0">鋸路</text>
+      <text class="lb" x="557.5" y="98.0" text-anchor="middle">後擋板 高 70</text>
+      <text class="lb" x="45.0" y="262">靠身擋板 高 100、厚 36，頂面左邊埋小 T 軌 800</text>
+      <text class="lb" x="45.0" y="284">紅色止擋沿 T 軌滑，離鋸路多遠就切多長</text>
     </svg>
-    <figcaption>從上面往下看，操作者在下方。角材靠著靠身擋板，左端頂住止擋，推過鋸片就是固定長度。底板一開始就整片做好，前後擋板裝上後再第一次推過鋸片，鋸路就是對齊線。</figcaption>
+    <figcaption>從上面往下看，操作者在下方。角材靠著靠身擋板，左端頂住止擋，推過鋸片就是 730。前後擋板裝好後第一次推過鋸片，鋸出來的那道就是對齊線。</figcaption>
   </figure>
   <dl>
-    <dt>底板</dt><dd>12 mm 夾板，<span class="n">1200 × 300</span>。靠身擋板要埋 T 軌，所以 T 軌在擋板上，底板不用加厚</dd>
+    <dt>底板</dt><dd>12 mm 夾板，<span class="n">1200 × 300</span>。鋸路在離左端 <span class="n">850</span> 的地方</dd>
     <dt>靠身擋板</dt><dd>兩片 18 mm 夾板對貼成 <span class="n">36</span> 厚，高 <span class="n">100</span>，長 <span class="n">1200</span>。比鋸片露出高度高 25 以上，推到底也不會整支鋸斷</dd>
     <dt>後擋板</dt><dd>厚 <span class="n">36</span>、高 <span class="n">70</span>，把鋸開的左右兩半連在一起</dd>
-    <dt>T 軌</dt><dd>小 T 軌埋在靠身擋板頂面左半段，長約 <span class="n">560</span>，止擋最遠離鋸路約 <span class="n">560</span>。要切更長就加延伸臂</dd>
+    <dt>T 軌</dt><dd>小 T 軌埋在靠身擋板頂面左邊，長 <span class="n">800</span>，止擋可以放到離鋸路約 <span class="n">800</span></dd>
     <dt>滑條</dt><dd>2 支，長 <span class="n">300</span>。位置照實機兩條溝槽量，圖上鋸路左右各 <span class="n">130</span> 是假設</dd>
-    <dt>切得到</dt><dd>角材寬 <span class="n">200</span> 以內、厚約 <span class="n">60</span> 以內</dd>
-    <dt>懸空</dt><dd>檯面比 1200 窄，照圖上假設的檯面，左邊懸出約 <span class="n">330</span>、右邊約 <span class="n">190</span>。長料那側放托料架撐著</dd>
+    <dt>12 尺料</dt><dd>不要整支上推台。先在木工桌用手持圓鋸粗切成約 <span class="n">760</span> 一段，推台上先修平一端，再頂止擋切 <span class="n">730</span>。4 支用掉約 <span class="n">3000</span>，剩約 <span class="n">600</span></dd>
+    <dt>縱切靠山</dt><dd>用推台時推到最右邊或拆掉，不要拿它當定長擋塊，切下來那段會被夾住甩回來</dd>
+    <dt>切得到</dt><dd>角材寬 <span class="n">200</span> 以內、厚約 <span class="n">60</span> 以內，寸二寸八 36 × 54 沒問題</dd>
+    <dt>懸空</dt><dd>照圖上假設的檯面，推台左邊懸出約 <span class="n">580</span>，下面放托料架或木工桌撐著</dd>
   </dl>
 </section>
 
