@@ -74,6 +74,7 @@ dd{margin:0;min-width:0}
 .arrow{stroke:currentColor;stroke-width:1.5;fill:none}
 .lb{fill:currentColor;font-family:var(--sans);font-size:12.5px}
 .lbm{fill:var(--muted);font-family:var(--sans);font-size:12px}
+[hidden]{display:none!important}
 .steps{margin:0;padding-left:1.5em;display:flex;flex-direction:column;gap:6px;font-size:15px}
 .sub{font-size:16px;font-weight:600;margin:6px 0 0}
 </style>
@@ -81,7 +82,7 @@ dd{margin:0;min-width:0}
 <div class="wrap">
 <header>
   <h1>DWE7492 要做的推台</h1>
-  <p class="lead">上面是會動的立體圖，下面是標尺寸的平面圖。俯視圖裡操作者站在圖的下方，往上推。紅色實線是鋸片，紅色虛線是鋸路。</p>
+  <p class="lead">上面是會動的立體圖，下面跟著顯示點選那一種的平面圖和說明。俯視圖裡操作者站在圖的下方，往上推。紅色實線是鋸片，紅色虛線是鋸路。</p>
   <div class="legend">
     <span><i class="sw" style="background:var(--ply)"></i>夾板底板</span>
     <span><i class="sw" style="background:var(--fence)"></i>擋板</span>
@@ -513,7 +514,7 @@ dd{margin:0;min-width:0}
 })();
 </script>
 
-<section>
+<section data-for="cross">
   <h2>橫切推台</h2>
   <p class="use">切角材用。切斷、切直角、同一個長度連切很多支。</p>
   <figure>
@@ -561,7 +562,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="short">
   <h2>短推台 1200 × 300</h2>
   <p class="use">角材段切用，例如寸二寸八切 730。板子只有 30 cm 深，切窄料剛好；鋸路偏左，右邊留 850 給止擋，縱切靠山拔掉。</p>
   <figure>
@@ -611,7 +612,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="video">
   <h2>影片版推台</h2>
   <p class="use">照不務正業〈圓鋸機推台製作指南〉做的橫切推台，尺寸改配 DWE7492。影片列了 9 種功能，做了前 7 種，前擋板延伸桿和安全擋罩沒做。</p>
   <figure>
@@ -683,7 +684,7 @@ dd{margin:0;min-width:0}
   <p class="note">來源：不務正業〈圓鋸機推台製作指南，看了再做一定成功！【自造筆記】〉<a href="https://www.youtube.com/watch?v=45KKRiZsPoE">YouTube</a>。影片用的是 SawStop，推台寬深沒講，800 × 650 和 T 軌位置是我配 DWE7492 排的。</p>
 </section>
 
-<section>
+<section data-for="cross">
   <h2>橫切推台放樣</h2>
   <p class="use">側面看過去，料越寬，起刀前推台要往操作者這邊拉得越出來。</p>
   <figure>
@@ -759,7 +760,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="panel">
   <h2>大板推台</h2>
   <p class="use">切板材、門片、桌面這類大件用。滑台走線軌，掛在檯鋸左邊。</p>
   <figure>
@@ -803,7 +804,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="miter">
   <h2>45° 推台</h2>
   <p class="use">角材做框、桌腳接角用。左右各切一刀，兩支合起來剛好 90°。</p>
   <figure>
@@ -836,7 +837,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="rip">
   <h2>靠山載板</h2>
   <p class="use">又長又重、邊不直的料修出第一道直邊用。料固定在載板上，載板貼著縱切靠山推。</p>
   <figure>
@@ -875,7 +876,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="thin">
   <h2>切薄片</h2>
   <p class="use">切封邊條、木片這種幾 mm 厚的薄料用。薄片落在鋸片左邊，不夾在鋸片和靠山中間。</p>
   <figure>
@@ -920,7 +921,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="tall tenon">
   <h2>立面切</h2>
   <p class="use">料立起來切。板子側立剖成兩片薄板，或料直立切榫頭。</p>
   <figure>
@@ -968,7 +969,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="stop">
   <h2>定長墊塊</h2>
   <p class="use">短料要連切很多支同長度用。靠山不直接當長度擋，中間墊一塊。</p>
   <figure>
@@ -1004,7 +1005,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="taper">
   <h2>錐度切</h2>
   <p class="use">桌腳、椅腳這種一頭粗一頭細的斜邊。用靠山載板，把料斜著夾。</p>
   <figure>
@@ -1041,7 +1042,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="finger">
   <h2>指接榫</h2>
   <p class="use">盒子、抽屜四個角的梳齒接合。板子直立，一刀切一個槽，靠定位銷決定間距。</p>
   <figure>
@@ -1070,7 +1071,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="rabbet">
   <h2>企口和開槽</h2>
   <p class="use">板邊切掉一角做搭接，或板面上切一道槽嵌背板、層板。鋸片不切穿。</p>
   <figure>
@@ -1096,7 +1097,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="groove">
   <h2>修邊機洗 T 軌槽</h2>
   <p class="use">在板子中間埋 30 型 T 軌用。兩支 L 鋁材剛好夾住修邊機底座，槽要多寬就用墊片把整個框往旁邊挪。</p>
   <figure>
@@ -1134,7 +1135,7 @@ dd{margin:0;min-width:0}
   </dl>
 </section>
 
-<section>
+<section data-for="dtube dcorner dend">
   <h2>垂直鑽孔導引塊</h2>
   <p class="use">沒有鑽床時用手電鑽鑽直孔。一塊導引塊兩端各一種導引：一端銅管鑽 3 mm 小孔，一端鐵角扶大鑽頭。</p>
   <figure>
@@ -1193,6 +1194,17 @@ dd{margin:0;min-width:0}
 
 <p class="note">鋸片和溝槽在檯面上的位置是示意。官方手冊沒標溝槽寬深和槽距，滑條和底板開工前要量實機。</p>
 </div>
+<script>
+(function(){
+  var secs=[].slice.call(document.querySelectorAll('section[data-for]'));
+  function pick(k){ secs.forEach(function(x){ x.hidden=x.dataset.for.split(' ').indexOf(k)<0; }); }
+  [].slice.call(document.querySelectorAll('.tab[data-k]')).forEach(function(b){
+    b.addEventListener('click',function(){ pick(b.dataset.k); });
+  });
+  pick('cross');
+})();
+</script>
+
 
 </body>
 </html>
