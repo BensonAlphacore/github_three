@@ -74,6 +74,8 @@ dd{margin:0;min-width:0}
 .arrow{stroke:currentColor;stroke-width:1.5;fill:none}
 .lb{fill:currentColor;font-family:var(--sans);font-size:12.5px}
 .lbm{fill:var(--muted);font-family:var(--sans);font-size:12px}
+.steps{margin:0;padding-left:1.5em;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.sub{font-size:16px;font-weight:600;margin:6px 0 0}
 </style>
 
 <div class="wrap">
@@ -92,6 +94,7 @@ dd{margin:0;min-width:0}
   <div class="tabs">
     <button type="button" class="tab" id="tab-cross" data-k="cross" aria-pressed="true">橫切推台</button>
     <button type="button" class="tab" id="tab-short" data-k="short" aria-pressed="false">短推台 730 角材</button>
+    <button type="button" class="tab" id="tab-video" data-k="video" aria-pressed="false">影片版推台</button>
     <button type="button" class="tab" id="tab-panel" data-k="panel" aria-pressed="false">大板推台</button>
     <button type="button" class="tab" id="tab-miter" data-k="miter" aria-pressed="false">45° 推台</button>
     <button type="button" class="tab" id="tab-rip" data-k="rip" aria-pressed="false">靠山載板</button>
@@ -206,6 +209,30 @@ dd{margin:0;min-width:0}
       var b=prism(g,mat.stock,clip(pts,true),12,48);
       return {r:r,g:g,b:b,dir:-1,nofence:true,start:60,end:-200,cutAt:-150,cam:[-400,1600,-1500],tgt:[280,-60,0],
         cap:'底板 1200 × 300，鋸路偏左：左邊 350、右邊 850。縱切靠山拔掉，推台右邊直接伸出去，重心還在檯面上不用撐。寸二寸八粗切成約 760 一段，修平一端後頂住右邊紅色止擋推過鋸片，每支都是 730。'};
+    },
+    video:function(){
+      var r=new T.Group(), g=new T.Group(); r.add(g);
+      prism(g,mat.ply,[[-400,325],[400,325],[400,-125],[200,-325],[-200,-325],[-400,-125]],0,30);
+      box(g,mat.metal,-139,-121,-9,0,-325,325);
+      box(g,mat.metal,121,139,-9,0,-325,325);
+      [[-200,-311],[200,-311],[320,-195]].forEach(function(t){ box(g,mat.metal,t[0]-9.5,t[0]+9.5,20.5,30,t[1],289); });
+      var sh=new T.Shape(); [[-100,30],[100,30],[100,130],[50,180],[-50,180],[-100,130]].forEach(function(q,i){ if(i) sh.lineTo(q[0],q[1]); else sh.moveTo(q[0],q[1]); });
+      var rg=new T.ExtrudeGeometry(sh,{depth:36,bevelEnabled:false}), rb=new T.Mesh(rg,mat.fence);
+      rb.position.z=-325; outline(rb,rg); g.add(rb);
+      box(g,mat.fence,-400,400,30,130,289,325);
+      box(g,mat.metal,-390,390,121,130.5,297.5,316.5);
+      box(g,mat.brass,-390,390,129.6,130.4,290,296);
+      box(g,mat.brass,-390,390,129.6,130.4,318,324);
+      box(g,mat.red,-70,70,30,130,325,343);
+      box(g,mat.red,-45,45,30,130,343,361);
+      box(g,mat.board,300,320,30,150,249,289);
+      box(g,mat.board,300,320,130,150,289,325);
+      box(g,mat.brass,304,316,150,166,300,314);
+      var pts=[[-300,174],[300,174],[300,289],[-300,289]];
+      prism(g,mat.stock,clip(pts,false),30,58);
+      var b=prism(g,mat.stock,clip(pts,true),30,58);
+      return {r:r,g:g,b:b,dir:-1,bh:72,nofence:true,start:110,end:-300,cutAt:-240,cam:[700,1650,1250],tgt:[0,0,-80],
+        cap:'照不務正業影片做的橫切推台：底板 18 + 12 對黏 30 厚，三條 T 軌給下壓夾用，前擋板頂面有 T 軌、刻度尺和定位塊，鋸片推到底會停在前擋板和紅色安全擋塊裡面。'};
     },
     panel:function(){
       var r=new T.Group(), g=new T.Group(); r.add(g);
@@ -582,6 +609,78 @@ dd{margin:0;min-width:0}
     <dt>切得到</dt><dd>角材寬 <span class="n">200</span> 以內、厚約 <span class="n">60</span> 以內，寸二寸八 36 × 54 沒問題</dd>
     <dt>懸空</dt><dd>左邊超出檯面約 <span class="n">80</span>、右邊約 <span class="n">440</span>。推台加角材的重心在鋸路右邊約 <span class="n">250</span>，還在檯面上，不會往右翻，不用另外撐</dd>
   </dl>
+</section>
+
+<section>
+  <h2>影片版推台</h2>
+  <p class="use">照不務正業〈圓鋸機推台製作指南〉做的橫切推台，尺寸改配 DWE7492。影片列了 9 種功能，做了前 7 種，前擋板延伸桿和安全擋罩沒做。</p>
+  <figure>
+    <svg viewBox="0 0 720 420" role="img" aria-label="影片版推台俯視圖：底板 800 寬、650 深，後面兩角斜切；中間鋸路，兩支滑條在鋸路左右；底板三條 T 軌；前擋板頂面有 T 軌和刻度尺，定位塊在右邊 300；後擋塊在鋸路後端；紅色安全擋塊在前擋板外側鋸路上">
+      <defs><marker id="ah10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="ah10s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="currentColor"/></marker></defs>
+      <polygon class="ply" points="160,352.5 560,352.5 560,127.5 460,27.5 260,27.5 160,127.5"/>
+      <line class="slot" x1="295" y1="27.5" x2="295" y2="352.5"/>
+      <line class="slot" x1="425" y1="27.5" x2="425" y2="352.5"/>
+      <rect class="metal" x="255.25" y="34.5" width="9.5" height="300"/>
+      <rect class="metal" x="455.25" y="34.5" width="9.5" height="300"/>
+      <rect class="metal" x="515.25" y="92.5" width="9.5" height="242"/>
+      <rect class="fence" x="310" y="27.5" width="100" height="18"/>
+      <rect class="stock" x="210" y="277" width="300" height="57.5"/>
+      <rect class="fence" x="160" y="334.5" width="400" height="18"/>
+      <rect class="metal" x="165" y="339" width="390" height="9.5"/>
+      <rect class="fence" x="510" y="314.5" width="10" height="38"/>
+      <rect class="stop" x="325" y="352.5" width="70" height="9"/>
+      <rect class="stop" x="337.5" y="361.5" width="45" height="9"/>
+      <line class="kerf" x1="360" y1="12" x2="360" y2="388"/>
+      <line class="arrow" x1="160" y1="8" x2="560" y2="8" marker-end="url(#ah10)" marker-start="url(#ah10s)"/>
+      <text class="lb" x="460" y="22" text-anchor="middle">800</text>
+      <line class="arrow" x1="140" y1="27.5" x2="140" y2="352.5" marker-end="url(#ah10)" marker-start="url(#ah10s)"/>
+      <text class="lb" x="132" y="194" text-anchor="end">650</text>
+      <line class="arrow" x1="362" y1="262" x2="508" y2="262" marker-end="url(#ah10)" marker-start="url(#ah10s)"/>
+      <text class="lb" x="435" y="256" text-anchor="middle">定長 300</text>
+      <text class="lbm" x="366" y="112">鋸路</text>
+      <text class="lb" x="360" y="60" text-anchor="middle">後擋塊</text>
+      <text class="lb" x="250" y="160" text-anchor="end">T 軌</text>
+      <text class="lb" x="470" y="160">T 軌</text>
+      <text class="lb" x="530" y="200">T 軌（截短）</text>
+      <text class="lb" x="291" y="230" text-anchor="end">滑條</text>
+      <text class="lb" x="429" y="230">滑條</text>
+      <text class="lb" x="200" y="100" text-anchor="end">斜切減重</text>
+      <text class="lb" x="300" y="309" text-anchor="middle">料</text>
+      <text class="lb" x="526" y="309">定位塊</text>
+      <text class="lb" x="160" y="400">前擋板 36 厚、100 高，頂面 T 軌＋左右刻度尺</text>
+      <text class="lb" x="404" y="380">紅色安全擋塊</text>
+      <line class="arrow" x1="690" y1="380" x2="690" y2="230" marker-end="url(#ah10)"/>
+      <text class="lb" x="704" y="400" text-anchor="end">往前推</text>
+    </svg>
+    <figcaption>從上面往下看，操作者在下方。料靠在前擋板內側，右端頂住定位塊，推過鋸片就是定長。推到底時鋸片停在前擋板裡，外側的紅色安全擋塊蓋住鋸片會冒出來的地方。</figcaption>
+  </figure>
+  <p class="sub">材料</p>
+  <dl>
+    <dt>底板</dt><dd>18 mm 和 12 mm 樺木夾板對黏成 <span class="n">30</span> 厚，裁 <span class="n">800 × 650</span>。後面兩個角各斜切掉 <span class="n">200</span>，減掉約 1 成面積</dd>
+    <dt>底板 T 軌</dt><dd>3 條，給下壓夾用。鋸路左右各 <span class="n">200</span> 一條，長 <span class="n">600</span>；右邊 <span class="n">320</span> 再一條，遇到斜角要截到約 <span class="n">480</span>。位置是我照影片排的，影片沒給尺寸</dd>
+    <dt>滑條</dt><dd>現成鋁製滑條 2 支。位置照實機兩條溝槽量，圖上鋸路左右各 <span class="n">130</span> 是假設</dd>
+    <dt>後擋塊</dt><dd>寬 <span class="n">200</span>、厚 <span class="n">36</span>、高 <span class="n">150</span>，上面兩角倒掉。只負責把鋸開的兩半連住，不用到完美 90°</dd>
+    <dt>前擋板</dt><dd>同一片板切兩條約 <span class="n">105</span> 高，對黏成 <span class="n">36</span> 厚，膠乾再修到 <span class="n">100</span> 高、<span class="n">800</span> 長。故意切大一點，留給溢膠和對不齊</dd>
+    <dt>前擋板 T 軌</dt><dd>頂面中間洗溝嵌 1 條。鋁軌凸出來就用砂輪機磨低再鎖</dd>
+    <dt>刻度尺</dt><dd>背膠鋼尺，貼在前擋板頂面洗的淺溝裡，左右各一條。尺分左手、右手（一條往右遞增、一條往左遞增），買的時候要看清楚</dd>
+    <dt>定位塊</dt><dd>鎖在前擋板 T 軌上，用 M8 蝶型螺絲。壓克力指示片切一條細線對刻度，影片量到定位塊和擋板差 <span class="n">2</span> mm，就疊兩片壓克力補平。指示片的螺絲孔開寬一點，可以微調。定位塊做窄一點，左右兩邊都能用</dd>
+    <dt>安全擋塊</dt><dd>漆紅，鎖在前擋板外側、鋸片會冒出來的地方。兩塊木頭故意做不同寬，大拇指自然會靠在兩側，不會放錯位置</dd>
+    <dt>切深</dt><dd>DWE7492 鋸片 90° 最大切深 <span class="n">77</span>，底板吃掉 <span class="n">30</span>，推台上剩約 <span class="n">47</span>。寸二寸八平放（36 厚）切得到，立起來（54）切不斷</dd>
+  </dl>
+  <p class="sub">做法</p>
+  <ol class="steps">
+    <li>18 和 12 夾板對黏，膠乾後裁成 800 × 650。</li>
+    <li>修邊機洗底板的 T 軌溝：兩條木條夾在溝的兩邊當靠板。先用 T 軌比修邊刀深度，洗到大概深度後，在 T 軌下墊 0.3 mm 厚薄規再調一次，讓溝比軌道深一點。T 軌寧可低一點點，絕對不能凸出來，凸出來推台就不平。每洗完一條就把靠板修平一次，影片洗到第三條時靠板被培林壓變形，軌道就鬆了。</li>
+    <li>後面兩個角斜切掉。</li>
+    <li>裝滑條：滑條放進檯鋸溝槽，下面墊幾片華司讓它稍微凸出檯面，點三秒膠，底板對好壓上去，等膠固定後翻過來鎖螺絲。之後再拆下來，在滑條和底板之間加墊片調高度，裝回去推到順為止。影片的鋸台是 T 型溝槽，滑條前後有小圓片卡住；DWE7492 溝槽的形狀要看實機，不一定要這麼麻煩。</li>
+    <li>後擋塊用夾具大概固定，直接鎖死。接著連後擋塊一起把底板切穿，這道鋸路就是裝前擋板的基準線。</li>
+    <li>做前擋板：兩條對黏，膠乾修尺寸，頂面中間洗溝裝 T 軌。</li>
+    <li>前擋板先鎖一顆螺絲，用五刀法（five cut method）校直角：同一塊板四個邊依序各切一刀，第五刀切下的木條前後寬度差，就是擋板歪了多少。照算出來的量，在夾住的固定塊和擋板之間塞薄規微調。影片做了三次，最後誤差 0.03 mm（網站建議 0.04 mm 以內）。校好再補鎖其他螺絲。</li>
+    <li>底板的 T 軌鎖上；前擋板的 T 軌磨低後鎖上。</li>
+    <li>做定位塊、壓克力指示片，在前擋板頂面洗淺溝貼刻度尺。</li>
+    <li>安全擋塊漆紅，鎖在前擋板外側鋸片會冒出來的地方。</li>
+  </ol>
+  <p class="note">來源：不務正業〈圓鋸機推台製作指南，看了再做一定成功！【自造筆記】〉<a href="https://www.youtube.com/watch?v=45KKRiZsPoE">YouTube</a>。影片用的是 SawStop，推台寬深沒講，800 × 650 和 T 軌位置是我配 DWE7492 排的。</p>
 </section>
 
 <section>
