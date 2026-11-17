@@ -6,7 +6,7 @@
 <style>:root{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>DWE7492 推台圖</title>
+<title>推台與治具圖</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -81,7 +81,7 @@ dd{margin:0;min-width:0}
 
 <div class="wrap">
 <header>
-  <h1>DWE7492 要做的推台</h1>
+  <h1>要做的推台和治具</h1>
   <p class="lead">上面是會動的立體圖，下面跟著顯示點選那一種的平面圖和說明。俯視圖裡操作者站在圖的下方，往上推。紅色實線是鋸片，紅色虛線是鋸路。</p>
   <div class="legend">
     <span><i class="sw" style="background:var(--ply)"></i>夾板底板</span>
@@ -107,6 +107,7 @@ dd{margin:0;min-width:0}
     <button type="button" class="tab" id="tab-finger" data-k="finger" aria-pressed="false">指接榫</button>
     <button type="button" class="tab" id="tab-rabbet" data-k="rabbet" aria-pressed="false">企口</button>
     <button type="button" class="tab" id="tab-groove" data-k="groove" aria-pressed="false">洗 T 軌槽</button>
+    <button type="button" class="tab" id="tab-csaw" data-k="csaw" aria-pressed="false">圓鋸斷切尺</button>
     <button type="button" class="tab" id="tab-dtube" data-k="dtube" aria-pressed="false">側靠山鑽孔</button>
     <button type="button" class="tab" id="tab-dcorner" data-k="dcorner" aria-pressed="false">鐵角鑽直孔</button>
     <button type="button" class="tab" id="tab-dend" data-k="dend" aria-pressed="false">端靠山鑽孔</button>
@@ -404,6 +405,45 @@ dd{margin:0;min-width:0}
       }
       return {r:r,g:g,b:new T.Group(),nosaw:true,anim:anim,cam:[1000,950,1500],tgt:[0,20,0],
         cap:'兩支 L 鋁材把底座夾住，修邊機只能前後走。框靠著基準直條洗第一刀，塞 9 的墊片洗第二刀，換 18 的墊片洗第三刀，槽就是 30 寬。洗完把 T 軌放進去。'};
+    },
+    csaw:function(){
+      var r=new T.Group(), S=new T.Group(); r.add(S);
+      box(r,mat.cab,-300,900,-60,0,-450,450);
+      box(r,mat.ply,-160,720,0,12,-220,220);
+      box(r,mat.red,730,770,0,80,-200,200);
+      var offs=[];
+      for(var i=0;i<5;i++){
+        var z0=-135+54*i;
+        box(r,mat.stock,0,730,12,48,z0+0.5,z0+53.5);
+        offs.push(box(r,mat.stock,-80,-1,12,48,z0+0.5,z0+53.5));
+      }
+      box(r,mat.ply,0,145,48,57,-300,300);
+      box(r,mat.metal,120,145,57,59,-300,300);
+      box(r,mat.metal,120,122,59,82,-300,300);
+      box(r,mat.fence,0,250,18,48,135,171);
+      box(S,mat.metal,-35,120,0,3,-142,142);
+      box(S,mat.metal,-12,12,40,122,-95,95);
+      box(S,mat.dark,12,105,15,95,-45,45);
+      box(S,mat.dark,25,55,95,150,-10,110);
+      box(S,mat.dark,20,100,95,135,110,170);
+      var bl=new T.Mesh(new T.CylinderGeometry(82.5,82.5,1.6,40),mat.blade);
+      bl.rotation.z=Math.PI/2; bl.position.y=34.5; S.add(bl);
+      function anim(u){
+        var A=240, B=-225, z, lift=0;
+        if(u<0.1) z=A;
+        else if(u<0.6) z=A+(B-A)*((u-0.1)/0.5);
+        else if(u<0.72) z=B;
+        else if(u<0.8){ z=B; lift=ease((u-0.72)/0.08)*140; }
+        else if(u<0.95){ z=B+(A-B)*ease((u-0.8)/0.15); lift=140; }
+        else { z=A; lift=140*(1-ease((u-0.95)/0.05)); }
+        S.position.set(0,57+lift,z);
+        offs.forEach(function(o,i){
+          var zc=-108+54*i, cut=(u>=0.6&&u<0.95)||(u>=0.1&&u<0.6&&z<zc-60);
+          o.position.x=-40.5-(cut?6:0);
+        });
+      }
+      return {r:r,g:S,b:new T.Group(),nosaw:true,anim:anim,cam:[800,700,1000],tgt:[310,20,20],
+        cap:'圓鋸底座寬的那側靠著 L 鋁走，底板的邊就是鋸路。底板下面的擋條勾住角材側邊，自動 90 度。五支寸二寸八並排、右端頂住紅色擋木，一刀切斷全部，每支都是 730。'};
     }
   };
   function drillScene(mode){
@@ -1133,6 +1173,63 @@ dd{margin:0;min-width:0}
     <dt>先試</dt><dd>在廢料上洗一段，拿 T 軌塞進去試鬆緊。太緊就在最後那片墊片上貼一層紙膠帶</dd>
     <dt>靠板邊的槽</dt><dd>不用治具，裝機器附的側導板貼著板邊推</dd>
   </dl>
+</section>
+
+<section data-for="csaw">
+  <h2>圓鋸斷切尺</h2>
+  <p class="use">手持圓鋸切角材用。長料先粗切，或推台放不下的長度。好幾支並排，一刀切斷，每支一樣長。</p>
+  <figure>
+    <svg viewBox="0 0 720 420" role="img" aria-label="圓鋸斷切尺俯視圖：五支寸二寸八並排平放，右端頂住鎖在桌上的擋木；斷切尺的底板壓在角材上，左邊的邊就是鋸路，L 鋁鎖在底板右邊給圓鋸靠，擋條在底板下面勾住最靠操作者那支角材的側邊">
+      <defs><marker id="ah11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="ah11s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="currentColor"/></marker></defs>
+      <rect class="tbl" x="70" y="30" width="520" height="350"/>
+      <text class="lbm" x="80" y="48">工作桌</text>
+      <rect class="stock" x="120" y="132.5" width="405" height="27"/>
+      <rect class="stock" x="120" y="159.5" width="405" height="27"/>
+      <rect class="stock" x="120" y="186.5" width="405" height="27"/>
+      <rect class="stock" x="120" y="213.5" width="405" height="27"/>
+      <rect class="stock" x="120" y="240.5" width="405" height="27"/>
+      <rect class="stop" x="525" y="120" width="15" height="160"/>
+      <rect class="fence" x="160" y="267.5" width="125" height="18"/>
+      <rect class="ply" x="160" y="50" width="72.5" height="300" fill-opacity=".85"/>
+      <rect class="metal" x="220" y="50" width="12.5" height="300"/>
+      <line class="kerf" x1="160" y1="36" x2="160" y2="364"/>
+      <line class="arrow" x1="160" y1="110" x2="525" y2="110" marker-start="url(#ah11s)" marker-end="url(#ah11)"/>
+      <text class="lb" x="380" y="102" text-anchor="middle">730</text>
+      <line class="arrow" x1="40" y1="370" x2="40" y2="60" marker-end="url(#ah11)"/>
+      <text class="lb" x="40" y="392" text-anchor="middle">圓鋸往前推</text>
+      <text class="lb" x="240" y="66">底板 9 厚、600 長</text>
+      <text class="lb" x="240" y="86">L 鋁，圓鋸靠這邊走</text>
+      <text class="lb" x="154" y="374" text-anchor="end">鋸路＝底板的邊</text>
+      <text class="lb" x="292" y="302">擋條在底板下面，勾住角材側邊</text>
+      <text class="lb" x="292" y="324">寸二寸八 5 支並排平放</text>
+      <text class="lb" x="548" y="196">擋木，</text>
+      <text class="lb" x="548" y="214">鎖在桌上</text>
+      <text class="lbm" x="116" y="128" text-anchor="end">切掉的頭</text>
+      <text class="lbm" x="330" y="410" text-anchor="middle">操作者站這側</text>
+    </svg>
+    <figcaption>從上面往下看，操作者站在下方。角材右端一起頂住擋木，斷切尺的底板邊對準離擋木 730 的位置，擋條勾住最靠你那支的側邊。圓鋸底座寬的那側靠著 L 鋁，從你這頭往前推，一刀切斷五支。</figcaption>
+  </figure>
+  <p class="sub">材料</p>
+  <dl>
+    <dt>底板</dt><dd>9 mm 夾板，長 <span class="n">600</span>。寬＝圓鋸底座寬那側的邊到鋸片的距離＋L 鋁 <span class="n">25</span>＋多留 <span class="n">30</span>。這個距離開工前量你的 C3606DB，一般 165 圓鋸約 <span class="n">110</span> 到 <span class="n">120</span>，所以先裁約 <span class="n">170</span>，第一刀切掉多的，剩約 <span class="n">140</span></dd>
+    <dt>L 鋁</dt><dd><span class="n">25 × 25</span>、厚 <span class="n">2</span> 以上，長 <span class="n">600</span>。平的那面鎖在底板上、靠離鋸路遠的那條長邊，立面給圓鋸底座靠</dd>
+    <dt>擋條</dt><dd>1寸寸2，長 <span class="n">250</span>，鎖在底板下面你站的那一頭，跟 L 鋁呈 90 度，往下凸 <span class="n">30</span></dd>
+    <dt>擋木</dt><dd>一塊方正的木塊鎖在工作桌上，角材右端頂住它。擋木到底板邊的距離就是切下來的長度</dd>
+    <dt>墊板</dt><dd>角材下面墊一片廢夾板，鋸片切穿後吃進廢板，不會傷到桌面</dd>
+    <dt>切深</dt><dd>底板 <span class="n">9</span>＋角材 <span class="n">36</span>，再多 <span class="n">3</span>，調到 <span class="n">48</span>。C3606DB 垂直最深 <span class="n">66</span></dd>
+    <dt>一次幾支</dt><dd>平放最多 <span class="n">5</span> 支（<span class="n">5 × 54 = 270</span>）。圓鋸機身長 <span class="n">285</span>，底板前後各要留約 <span class="n">140</span> 讓它放穩</dd>
+  </dl>
+  <p class="sub">做法</p>
+  <ol class="steps">
+    <li>9 mm 夾板裁 <span class="n">600 × 170</span>。</li>
+    <li>L 鋁平的那面朝下，鎖在底板一條長邊上，立面朝底板中間。螺絲頭要沉下去。</li>
+    <li>擋條用角尺對準 L 鋁立面 90 度，鎖在底板下面的一頭。</li>
+    <li>圓鋸底座寬的那側靠著 L 鋁立面走一刀，把底板和擋條多出來的部分一起切掉。切完底板的邊就是鋸路。</li>
+    <li>用的時候，角材並排平放在墊板上，右端一起頂住擋木。斷切尺放上去，擋條勾住最靠你那支的側邊，底板的邊對準離擋木 <span class="n">730</span> 的位置。</li>
+    <li>夾子夾在 L 鋁外側，把斷切尺和角材一起夾在桌上，不要擋到圓鋸。</li>
+    <li>圓鋸底座靠著 L 鋁，從你這頭往前推，一刀切過去。</li>
+    <li>第一次先拿廢料試切，量長度、用角尺看方不方正。不準就重新對擋條。</li>
+  </ol>
 </section>
 
 <section data-for="dtube dcorner dend">
