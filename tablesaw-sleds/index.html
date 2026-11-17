@@ -409,48 +409,55 @@ dd{margin:0;min-width:0}
     csaw:function(){
       var r=new T.Group(), S=new T.Group(); r.add(S);
       box(r,mat.cab,-300,900,-60,0,-450,450);
-      box(r,mat.ply,-200,400,0,12,-350,350);
-      box(r,mat.ply,600,800,0,12,-150,150);
-      box(r,mat.red,730,770,12,80,-150,150);
-      box(r,mat.fence,-200,-1,12,48,-165,-135);
-      box(r,mat.fence,1,400,12,48,-165,-135);
+      box(r,mat.ply,-200,400,0,12,-300,110);
+      box(r,mat.ply,-200,-10,0,12,110,300);
+      box(r,mat.ply,10,400,0,12,110,300);
+      box(r,mat.ply,600,800,0,12,-100,100);
+      box(r,mat.red,730,770,12,80,-100,100);
+      box(r,mat.fence,-200,-1,12,48,-111,-81);
+      box(r,mat.fence,1,400,12,48,-111,-81);
       var offs=[];
-      for(var i=0;i<5;i++){
-        var z0=-135+54*i;
+      for(var i=0;i<3;i++){
+        var z0=-81+54*i;
         box(r,mat.stock,0,730,12,48,z0+0.5,z0+53.5);
         offs.push(box(r,mat.stock,-80,-1,12,48,z0+0.5,z0+53.5));
       }
-      box(r,mat.fence,10,145,12,54,-350,-314);
-      box(r,mat.fence,10,145,12,54,314,350);
-      box(r,mat.ply,0,145,54,63,-350,350);
-      box(r,mat.metal,120,145,63,65,-350,350);
-      box(r,mat.metal,120,122,65,88,-350,350);
-      box(r,mat.metal,297,303,48,58,-180,290);
-      box(r,mat.metal,290,310,12,58,-180,-165);
-      box(r,mat.metal,290,310,12,58,135,150);
-      box(S,mat.metal,-35,120,0,3,-142,142);
+      [[-55,-5],[85,135]].forEach(function(q){
+        box(r,mat.fence,q[0],q[1],12,54,-300,-264);
+        box(r,mat.fence,q[0],q[1],12,54,264,300);
+        box(r,mat.metal,q[0],q[1],54,59,-300,300);
+      });
+      box(r,mat.metal,-55,-50,59,104,-300,300);
+      box(r,mat.ply,-50,-35,59,71,-300,300);
+      box(r,mat.metal,130,135,59,104,-300,300);
+      box(r,mat.ply,115,130,59,71,-300,300);
+      box(r,mat.red,85,115,59,79,-310,-298);
+      box(r,mat.metal,297,303,48,58,-126,236);
+      box(r,mat.metal,290,310,12,58,-126,-111);
+      box(r,mat.metal,290,310,12,58,81,96);
+      box(S,mat.metal,-35,115,0,3,-142,142);
       box(S,mat.metal,-12,12,40,122,-95,95);
-      box(S,mat.dark,12,105,15,95,-45,45);
+      box(S,mat.dark,12,100,15,95,-45,45);
       box(S,mat.dark,25,55,95,150,-10,110);
-      box(S,mat.dark,20,100,95,135,110,170);
+      box(S,mat.dark,20,95,95,135,110,170);
       var bl=new T.Mesh(new T.CylinderGeometry(82.5,82.5,1.6,40),mat.blade);
-      bl.rotation.z=Math.PI/2; bl.position.y=28.5; S.add(bl);
+      bl.rotation.z=Math.PI/2; bl.position.y=32.5; S.add(bl);
       function anim(u){
-        var A=240, B=-225, z, lift=0;
+        var A=158, B=-155, z, lift=0;
         if(u<0.1) z=A;
         else if(u<0.6) z=A+(B-A)*((u-0.1)/0.5);
         else if(u<0.72) z=B;
         else if(u<0.8){ z=B; lift=ease((u-0.72)/0.08)*140; }
         else if(u<0.95){ z=B+(A-B)*ease((u-0.8)/0.15); lift=140; }
         else { z=A; lift=140*(1-ease((u-0.95)/0.05)); }
-        S.position.set(0,63+lift,z);
+        S.position.set(0,59+lift,z);
         offs.forEach(function(o,i){
-          var zc=-108+54*i, cut=(u>=0.6&&u<0.95)||(u>=0.1&&u<0.6&&z<zc-60);
+          var zc=-54+54*i, cut=(u>=0.6&&u<0.95)||(u>=0.1&&u<0.6&&z<zc-60);
           o.position.x=-40.5-(cut?6:0);
         });
       }
-      return {r:r,g:S,b:new T.Group(),nosaw:true,anim:anim,cam:[800,700,1000],tgt:[310,20,20],
-        cap:'橋架在兩塊腳上、跨過角材，角材厚薄不一或有點彎都不影響圓鋸。角材往對面頂住後靠山、右端頂住紅色擋木，用 F 夾夾緊；圓鋸底座靠著 L 鋁從你這頭推過去，一刀切斷五支，每支 730。'};
+      return {r:r,g:S,b:new T.Group(),nosaw:true,anim:anim,cam:[760,640,900],tgt:[300,30,0],
+        cap:'兩支 L 鋁 50×50×5 架在腳上、跨過角材，圓鋸底座直接騎在 L 鋁的平面上，內側兩條墊條夾住底座兩邊，只能前後走。鋸片從兩支導軌中間往下切，推到尾端紅色擋塊停。角材頂住後靠山和右邊擋木，一刀切斷三支，每支 730。'};
     }
   };
   function drillScene(mode){
@@ -1184,68 +1191,85 @@ dd{margin:0;min-width:0}
 
 <section data-for="csaw">
   <h2>橋式斷切台</h2>
-  <p class="use">手持圓鋸切角材用。長料先粗切，或推台放不下的長度。圓鋸走在固定的橋上，不壓在角材上；好幾支並排一刀切斷，每支一樣長。</p>
+  <p class="use">手持圓鋸切角材用。長料先粗切，或推台放不下的長度。兩支 L 鋁架空跨過角材，圓鋸底座騎在上面、兩邊被夾住，只能前後走；好幾支並排一刀切斷，每支一樣長。</p>
   <figure>
-    <svg viewBox="0 0 720 430" role="img" aria-label="橋式斷切台俯視圖：墊板上鎖一支後靠山，五支寸二寸八並排頂住後靠山、右端頂住擋木；橋由兩塊腳架在墊板上、跨過角材，橋板左邊的邊就是鋸路，L 鋁鎖在橋板右邊給圓鋸靠；橋的右手邊用一支 F 夾把角材夾緊在後靠山上">
+    <svg viewBox="0 0 720 430" role="img" aria-label="橋式斷切台俯視圖：墊板上鎖一支後靠山，三支寸二寸八並排頂住後靠山、右端頂住擋木；兩支 L 鋁導軌各自架在兩塊腳上、跨過角材，中間空出來給鋸片過，內側各一條墊條夾住圓鋸底座；導軌尾端有圓鋸擋塊，墊板靠操作者那頭沿鋸路有一個缺口，圓鋸從這裡起步">
       <defs><marker id="ah11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker><marker id="ah11s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="currentColor"/></marker></defs>
-      <rect class="tbl" x="44" y="12" width="580" height="378"/>
-      <rect class="ply" x="60" y="25" width="300" height="350" fill-opacity=".45"/>
-      <rect class="ply" x="460" y="125" width="100" height="150" fill-opacity=".45"/>
-      <rect class="fence" x="60" y="117.5" width="300" height="15"/>
-      <rect class="stock" x="120" y="132.5" width="405" height="27"/>
+      <rect class="tbl" x="44" y="28" width="580" height="352"/>
+      <path class="ply" fill-opacity=".45" d="M60 50H360V350H165V255H155V350H60Z"/>
+      <rect class="ply" x="460" y="150" width="100" height="100" fill-opacity=".45"/>
+      <rect class="fence" x="60" y="144.5" width="300" height="15"/>
       <rect class="stock" x="120" y="159.5" width="405" height="27"/>
       <rect class="stock" x="120" y="186.5" width="405" height="27"/>
       <rect class="stock" x="120" y="213.5" width="405" height="27"/>
-      <rect class="stock" x="120" y="240.5" width="405" height="27"/>
-      <rect class="stop" x="525" y="125" width="20" height="150"/>
-      <rect class="metal" x="306" y="110" width="6" height="172"/>
-      <rect class="ply" x="160" y="25" width="72.5" height="350" fill-opacity=".9"/>
-      <rect class="metal" x="220" y="25" width="12.5" height="350"/>
-      <rect class="slot" x="165" y="25" width="67.5" height="18"/>
-      <rect class="slot" x="165" y="357" width="67.5" height="18"/>
-      <line class="kerf" x1="160" y1="14" x2="160" y2="388"/>
-      <line class="arrow" x1="160" y1="96" x2="525" y2="96" marker-start="url(#ah11s)" marker-end="url(#ah11)"/>
-      <text class="lb" x="400" y="88" text-anchor="middle">730</text>
-      <line class="arrow" x1="26" y1="380" x2="26" y2="40" marker-end="url(#ah11)"/>
-      <text class="lb" x="26" y="406" text-anchor="middle">往前推</text>
-      <text class="lb" x="240" y="40">橋：9 厚夾板＋L 鋁，圓鋸靠 L 鋁走</text>
-      <text class="lbm" x="240" y="58">橋兩頭底下各一塊腳，高 42（虛線）</text>
-      <text class="lb" x="70" y="112">後靠山</text>
-      <text class="lbm" x="114" y="150" text-anchor="end">切掉的頭</text>
-      <text class="lb" x="320" y="300">F 夾，把角材夾緊在後靠山上</text>
-      <text class="lb" x="320" y="322">寸二寸八 5 支並排平放</text>
-      <text class="lb" x="70" y="364">墊板（廢夾板）</text>
+      <rect class="stop" x="525" y="150" width="20" height="100"/>
+      <rect class="metal" x="306" y="137" width="6" height="118"/>
+      <rect class="metal" x="132.5" y="50" width="25" height="300"/>
+      <rect class="metal" x="202.5" y="50" width="25" height="300"/>
+      <rect class="ply" x="135" y="50" width="7.5" height="300"/>
+      <rect class="ply" x="217.5" y="50" width="7.5" height="300"/>
+      <rect class="slot" x="132.5" y="50" width="25" height="18"/>
+      <rect class="slot" x="202.5" y="50" width="25" height="18"/>
+      <rect class="slot" x="132.5" y="332" width="25" height="18"/>
+      <rect class="slot" x="202.5" y="332" width="25" height="18"/>
+      <rect class="stop" x="202.5" y="44" width="15" height="6"/>
+      <rect class="slot" x="142.5" y="129" width="75" height="142"/>
+      <line class="kerf" x1="160" y1="30" x2="160" y2="378"/>
+      <line class="arrow" x1="160" y1="122" x2="525" y2="122" marker-start="url(#ah11s)" marker-end="url(#ah11)"/>
+      <text class="lb" x="400" y="114" text-anchor="middle">730</text>
+      <line class="arrow" x1="26" y1="370" x2="26" y2="60" marker-end="url(#ah11)"/>
+      <text class="lb" x="26" y="396" text-anchor="middle">往前推</text>
+      <text class="lb" x="236" y="46">圓鋸擋塊，推到這裡停</text>
+      <text class="lb" x="236" y="68">兩支 L 鋁 50×50×5，立面在外側朝上</text>
+      <text class="lbm" x="236" y="86">內側各一條墊條夾住圓鋸底座；兩頭底下各一塊腳（虛線）</text>
+      <text class="lb" x="70" y="139">後靠山</text>
+      <text class="lbm" x="114" y="176" text-anchor="end">切掉的頭</text>
+      <text class="lb" x="320" y="268">F 夾，把角材夾緊在後靠山上</text>
+      <text class="lb" x="320" y="290">寸二寸八 3 支並排平放</text>
+      <text class="lbm" x="236" y="312">虛線框是圓鋸底座</text>
+      <text class="lb" x="70" y="340">墊板</text>
+      <text class="lb" x="236" y="338">缺口：圓鋸從這裡起步</text>
+      <line class="arrow" x1="232" y1="334" x2="168" y2="310" marker-end="url(#ah11)"/>
       <text class="lb" x="568" y="196">擋木</text>
       <text class="lbm" x="568" y="214">鎖在墊條上</text>
-      <text class="lb" x="154" y="404" text-anchor="end">鋸路＝橋板的邊</text>
-      <text class="lbm" x="334" y="424" text-anchor="middle">操作者站這側</text>
+      <text class="lb" x="154" y="396" text-anchor="end">鋸路</text>
+      <text class="lbm" x="334" y="420" text-anchor="middle">操作者站這側</text>
     </svg>
-    <figcaption>從上面往下看，操作者站在下方。橋架在兩塊腳上、跨過角材，不碰角材。角材往對面頂住後靠山、右端頂住擋木，用 F 夾夾緊。圓鋸底座寬的那側靠著 L 鋁，從你這頭往前推，一刀切斷五支。</figcaption>
+    <figcaption>從上面往下看，操作者站在下方。兩支 L 鋁架在腳上、跨過角材，不碰角材，中間空出來給鋸片過。圓鋸底座放在兩支 L 鋁的平面上，兩邊被墊條夾住。角材往對面頂住後靠山、右端頂住擋木，用 F 夾夾緊，圓鋸從缺口起步往前推到擋塊，一刀切斷三支。</figcaption>
   </figure>
+  <p class="sub">先量圓鋸</p>
+  <dl>
+    <dt>底座</dt><dd>C3606DB 底座的總寬，和鋸片到底座左右兩邊各多遠。查不到官方數字，下面先用底座寬 <span class="n">150</span>、鋸片離窄邊 <span class="n">35</span>、離寬邊 <span class="n">115</span> 來算，量到之後照著改</dd>
+    <dt>機身高度</dt><dd>L 鋁立面比底座高 <span class="n">45</span>。看底座兩邊往外 <span class="n">2</span> 公分內、離底座 <span class="n">45</span> 以下有沒有機身會撞到。會撞就把那一側的墊條加寬，L 鋁往外移</dd>
+  </dl>
   <p class="sub">材料</p>
   <dl>
-    <dt>墊板</dt><dd>廢夾板，9 到 18 都可以，這裡用 <span class="n">12</span>，裁 <span class="n">600 × 700</span>。整組鎖在上面，用夾子夾在工作桌上。鋸片會切進墊板 <span class="n">3</span></dd>
-    <dt>橋板</dt><dd>9 mm 夾板，長 <span class="n">700</span>。寬＝圓鋸底座寬那側的邊到鋸片的距離＋L 鋁 <span class="n">25</span>＋多留 <span class="n">30</span>。這個距離開工前量你的 C3606DB，一般 165 圓鋸約 <span class="n">110</span> 到 <span class="n">120</span>，所以先裁約 <span class="n">170</span>，第一刀切掉多的，剩約 <span class="n">140</span></dd>
-    <dt>L 鋁</dt><dd><span class="n">25 × 25</span>、厚 <span class="n">2</span> 以上，長 <span class="n">700</span>。平的那面鎖在橋板上、離鋸路遠的那條長邊，立面給圓鋸底座靠</dd>
-    <dt>腳</dt><dd>2 塊，長 <span class="n">135</span>、寬 <span class="n">36</span>、高 <span class="n">42</span>，用寸二寸八碎料在檯鋸上剖成 42 高。鎖在橋板兩頭底下。比角材高 <span class="n">6</span>，角材從橋下穿過去</dd>
-    <dt>後靠山</dt><dd>1寸寸2，長 <span class="n">600</span>，立著鎖在墊板對面那一側，高 <span class="n">36</span>，比橋低 <span class="n">6</span>。用角尺跟 L 鋁對 90 度</dd>
-    <dt>擋木和墊條</dt><dd>墊條跟墊板一樣厚，長約 <span class="n">200</span>，擋木鎖在墊條上。墊條夾在桌上，角材尾端架在墊條上頂住擋木。擋木到鋸路的距離就是切下來的長度</dd>
-    <dt>F 夾</dt><dd>1 支，在橋的右手邊橫著夾，把 5 支角材夾緊在後靠山上。圓鋸往前推時會把角材往對面推，後靠山擋住</dd>
-    <dt>切深</dt><dd>腳 <span class="n">42</span>＋橋板 <span class="n">9</span>＝<span class="n">51</span>，再切進墊板 <span class="n">3</span>，調到 <span class="n">54</span>。C3606DB 垂直最深 <span class="n">66</span>。寸二寸八只能平放切</dd>
-    <dt>一次幾支</dt><dd>平放 <span class="n">5</span> 支（<span class="n">5 × 54 = 270</span>）。圓鋸機身長 <span class="n">285</span>，橋 <span class="n">700</span> 長，前後才放得下起步和切出的位置</dd>
+    <dt>導軌</dt><dd>你手上的 L 鋁 <span class="n">50 × 50 × 5</span>、長 <span class="n">600</span> 兩支。平的那面朝下，立面在外側朝上。圓鋸底座直接騎在兩支的平面上滑。窄邊那支平面的內緣要離鋸路 <span class="n">5</span> 以上，不能蓋到鋸片</dd>
+    <dt>墊條</dt><dd>12 mm 夾板條 2 條，長 <span class="n">600</span>、高 <span class="n">12</span>，貼著 L 鋁立面內側鋪在平面上，夾住底座兩邊。窄邊墊條寬＝<span class="n">50</span> 減窄邊距離，量到 35 就是 <span class="n">15</span>；寬邊墊條 <span class="n">15</span>。兩條墊條內側的距離＝底座寬再加一張紙</dd>
+    <dt>腳</dt><dd>4 塊，<span class="n">50 × 36 × 42</span>，用寸二寸八碎料在檯鋸上剖成 42 高。每支導軌兩頭底下各一塊。比角材高 <span class="n">6</span>，角材從導軌下面穿過去。螺絲從墊條穿過 L 鋁鎖進腳，底座滑的地方不會有螺絲頭</dd>
+    <dt>墊板</dt><dd>廢夾板，9 到 18 都可以，這裡用 <span class="n">12</span>，裁 <span class="n">600 × 600</span>。靠你那頭沿鋸路切一個缺口，寬 <span class="n">20</span>、深 <span class="n">190</span>。整組鎖在上面，用夾子夾在工作桌上</dd>
+    <dt>後靠山</dt><dd>1寸寸2，長 <span class="n">600</span>，立著鎖在墊板對面那一側，高 <span class="n">36</span>。用角尺跟導軌對 90 度</dd>
+    <dt>圓鋸擋塊</dt><dd>對面那頭的導軌尾端鎖一小塊木頭，圓鋸推到這裡就停，不會推出導軌</dd>
+    <dt>擋木和墊條</dt><dd>墊條跟墊板一樣厚，擋木鎖在墊條上。墊條夾在桌上，角材尾端架在墊條上頂住擋木。擋木到鋸縫的距離就是切下來的長度</dd>
+    <dt>F 夾</dt><dd>1 支，在導軌的右手邊橫著夾，把角材夾緊在後靠山上。圓鋸往前推時會把角材往對面推，後靠山擋住</dd>
+    <dt>切深</dt><dd>腳 <span class="n">42</span>＋L 鋁 <span class="n">5</span>＝<span class="n">47</span>，再切進墊板 <span class="n">3</span>，調到 <span class="n">50</span>。C3606DB 垂直最深 <span class="n">66</span>。寸二寸八只能平放切</dd>
+    <dt>一次幾支</dt><dd>導軌 <span class="n">600</span>、圓鋸機身長 <span class="n">285</span>，一次 <span class="n">3</span> 支（<span class="n">3 × 54 = 162</span>）。要一次 5 支，導軌要 <span class="n">750</span> 以上</dd>
   </dl>
   <p class="sub">做法</p>
   <ol class="steps">
-    <li>墊板裁 <span class="n">600 × 700</span>，橋板裁 <span class="n">700 × 170</span>，腳 2 塊 <span class="n">135 × 36 × 42</span>。</li>
-    <li>L 鋁平的那面朝下，鎖在橋板一條長邊上，立面朝橋板中間。螺絲頭要沉下去。</li>
-    <li>兩塊腳鎖在橋板兩頭底下。</li>
+    <li>量圓鋸底座，照上面的算法定兩條墊條的寬度。</li>
+    <li>墊板裁 <span class="n">600 × 600</span>，靠你那頭在鋸路的位置切缺口 <span class="n">20 × 190</span>。腳 4 塊，墊條 2 條，後靠山 1 支。</li>
+    <li>每支 L 鋁兩頭底下墊腳，墊條貼著立面放在平面上，鑽孔從墊條穿過 L 鋁鎖進腳。</li>
     <li>後靠山立著鎖在墊板對面那一側。</li>
-    <li>橋放到墊板上，用角尺讓 L 鋁立面對後靠山 90 度，從墊板底下鎖螺絲進兩塊腳。</li>
-    <li>圓鋸底座寬的那側靠著 L 鋁走第一刀，把橋板多出來的邊切掉。後靠山和墊板也會切出一道鋸縫，之後就對這道縫量長度。</li>
+    <li>窄邊導軌放上墊板，平面內緣離鋸路 <span class="n">5</span>，墊條內側用角尺對後靠山 90 度，從墊板底下鎖螺絲進腳。</li>
+    <li>圓鋸拔掉電池，底座放在導軌上你這頭，貼著窄邊墊條，鋸片垂進缺口。寬邊導軌靠過來，墊條貼住底座另一側，中間夾一張紙，再從墊板底下鎖。抽掉紙，推推看，要順又不能晃。</li>
+    <li>對面那頭鎖圓鋸擋塊。</li>
+    <li>第一刀：鋸片在缺口裡起步，往前推到擋塊，後靠山和墊板切出一道鋸縫，之後就對這道縫量長度。</li>
     <li>擋木鎖在墊條上，墊條放在擋木離鋸縫 <span class="n">730</span> 的地方，夾在桌上。</li>
-    <li>用的時候，角材從橋下穿過去，往對面頂住後靠山，右端頂住擋木，用 F 夾夾緊。圓鋸從你這頭往前推，一刀切斷。</li>
+    <li>用的時候，角材從導軌下面穿過去，往對面頂住後靠山，右端頂住擋木，用 F 夾夾緊。圓鋸從缺口起步往前推到擋塊，一刀切斷。</li>
     <li>第一次先拿廢料試切，量長度、用角尺看方不方正。</li>
   </ol>
+  <p class="note">參考影片：<a href="https://www.youtube.com/watch?v=Z-JRfPirHI8">HOME DIY「作らないと後悔する丸鋸スライド台」</a>。兩支鋁軌架在木塊上夾住圓鋸底座、尾端加擋塊是照它做的；導軌換成你手上的 50×50×5，尺寸照 C3606DB 重算。</p>
 </section>
 
 <section data-for="dtube dcorner dend">
