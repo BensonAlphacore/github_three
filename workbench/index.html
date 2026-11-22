@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>木工桌施工圖</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 版面照 tablesaw-sleds：上面立體動畫＋步驟分頁，下面跟著顯示那一步的尺寸圖和說明 */
+:root{
+  --bg:#edf0ee; --panel:#f8faf9; --ink:#1c2523; --muted:#5b6a66; --line:#c3ccc8;
+  --ply:#dcbd86; --ply-edge:#8f6f3a; --leg:#c79a5e; --rail:#e0cf8c; --rail2:#cdb86e; --waste:#d5dad8;
+  --blade:#cf3327;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141a19; --panel:#1b2322; --ink:#e4ebe8; --muted:#94a39f; --line:#35413e;
+  --ply:#8b6d3d; --ply-edge:#d0ab6c; --leg:#a37a45; --rail:#9c8c4f; --rail2:#86763d; --waste:#2c3533;
+  --blade:#ff5b4d; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141a19; --panel:#1b2322; --ink:#e4ebe8; --muted:#94a39f; --line:#35413e;
+  --ply:#8b6d3d; --ply-edge:#d0ab6c; --leg:#a37a45; --rail:#9c8c4f; --rail2:#86763d; --waste:#2c3533;
+  --blade:#ff5b4d; color-scheme:dark }
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7}
+[hidden]{display:none!important}
+.wrap{max-width:860px;margin:0 auto;padding-block:36px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:40px}
+h1{font-size:30px;line-height:1.25;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:22px;margin:0;font-weight:700}
+p{margin:0;max-width:38em}
+.lead{color:var(--muted)}
+header,section{display:flex;flex-direction:column;gap:14px}
+.use{font-weight:500}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:560px;height:auto;color:var(--ink)}
+figcaption{padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:15px}
+dt{color:var(--muted)}
+dd{margin:0;min-width:0}
+.n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.93em}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:12px;border:1px solid var(--ply-edge);display:inline-block}
+.note{border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:14px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font:inherit;font-size:15px;font-weight:500;padding:7px 16px;border-radius:4px;cursor:pointer;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--blade);outline-offset:2px}
+.tab.play{margin-left:auto}
+#stage3d{width:100%;aspect-ratio:16/10;max-width:100%;cursor:grab}
+#stage3d canvas{display:block;width:100%;height:100%}
+.steps{margin:0;padding-left:1.5em;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.sub{font-size:16px;font-weight:600;margin:6px 0 0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.two figure svg{min-width:0}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.cut{border-collapse:collapse;font-size:14px;width:100%;min-width:560px}
+.cut th,.cut td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.cut th{color:var(--muted);font-weight:500;white-space:nowrap}
+.cut tr:last-child td{border-bottom:none}
+/* SVG 零件 */
+.ply{fill:var(--ply);stroke:var(--ply-edge);stroke-width:1.2}
+.leg{fill:var(--leg);stroke:var(--ink);stroke-width:1}
+.rail{fill:var(--rail);stroke:var(--ink);stroke-width:1}
+.rail2{fill:var(--rail2);stroke:var(--ink);stroke-width:1}
+.waste{fill:var(--waste);stroke:var(--muted);stroke-width:.8}
+.asmr,.asml{fill:none;stroke:var(--ink);stroke-width:.9;stroke-dasharray:4 3}
+.asml{fill:var(--leg);fill-opacity:.35}
+.grain{stroke:var(--ply-edge);stroke-width:.7;opacity:.6}
+.hole{fill:var(--bg);stroke:var(--ink);stroke-width:1}
+.screwb{fill:#7d8a90;stroke:var(--ink);stroke-width:.8}
+.screwhd{fill:var(--ink)}
+.screw{stroke:var(--ink);stroke-width:1.6}
+.screwh{fill:var(--ink)}
+.kerf{stroke:var(--blade);stroke-width:1.2;stroke-dasharray:4 3;fill:none}
+.dim{stroke:currentColor;stroke-width:.8;fill:none}
+.ext{stroke:var(--muted);stroke-width:.6;fill:none}
+.dimt{fill:currentColor;font-family:var(--mono);font-size:11px}
+.lb{fill:currentColor;font-family:var(--sans);font-size:12.5px}
+.lbm{fill:var(--muted);font-family:var(--sans);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>木工桌施工圖</h1>
+  <p class="lead">桌面 1200 × 600、高 755，跟檯鋸台面同高。尺寸照 SketchUp 模型（木工桌模組）。上面是會動的立體圖，按步驟切換；下面跟著顯示那一步的尺寸圖和做法。單位都是 mm。</p>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--leg)"></i>腳：寸二寸八 36 × 54</span>
+    <span><i class="sw" style="background:var(--rail)"></i>框：1寸寸2 30 × 36</span>
+    <span><i class="sw" style="background:var(--ply)"></i>桌面：15 木芯板</span>
+  </div>
+</header>
+
+<section>
+  <div class="tabs" role="group" aria-label="施工步驟">
+    <button type="button" class="tab" data-k="all" aria-pressed="true">總覽</button>
+    <button type="button" class="tab" data-k="cut" aria-pressed="false">1 下料</button>
+    <button type="button" class="tab" data-k="frame" aria-pressed="false">2 組日字框</button>
+    <button type="button" class="tab" data-k="legs" aria-pressed="false">3 上腳</button>
+    <button type="button" class="tab" data-k="top" aria-pressed="false">4 裝桌面</button>
+    <button type="button" class="tab play" id="btn-play">暫停</button>
+  </div>
+  <figure>
+    <div id="stage3d"></div>
+    <figcaption><span id="cap3d"></span> 拖曳可以轉視角。</figcaption>
+  </figure>
+</section>
+
+<section data-for="all">
+  <h2>總覽</h2>
+  <p class="use">4 支腳、3 個一模一樣的日字框、1 片桌面。框全部鎖在腳的內側，桌面從底下往上鎖，桌面上看不到螺絲。</p>
+  <figure><svg viewBox="0 0 720 520" role="img" aria-label="正視圖：桌面長 1200、高 755，左右各外伸 100、框 1000；三層框離地 138、下層空間 230、中層空間 264"><rect class="rail" x="120" y="368" width="500" height="18"/><rect class="rail" x="120" y="235" width="500" height="18"/><rect class="rail" x="120" y="85" width="500" height="18"/><rect class="leg" x="120" y="85" width="27" height="370"/><rect class="leg" x="593" y="85" width="27" height="370"/><rect class="ply" x="70" y="77.5" width="600" height="7.5"/><line class="ext" x1="50" y1="455" x2="690" y2="455"/><line class="ext" x1="70" y1="77.5" x2="70" y2="43.5"/><line class="ext" x1="670" y1="77.5" x2="670" y2="43.5"/><line class="dim" x1="70" y1="47.5" x2="670" y2="47.5"/><line class="dim" x1="67" y1="50.5" x2="73" y2="44.5"/><line class="dim" x1="667" y1="50.5" x2="673" y2="44.5"/><text class="dimt" x="370" y="43.5" text-anchor="middle">桌面長 1200</text><line class="ext" x1="70" y1="455" x2="70" y2="487"/><line class="ext" x1="120" y1="455" x2="120" y2="487"/><line class="dim" x1="70" y1="483" x2="120" y2="483"/><line class="dim" x1="67" y1="486" x2="73" y2="480"/><line class="dim" x1="117" y1="486" x2="123" y2="480"/><text class="dimt" x="95" y="479" text-anchor="middle">外伸 100</text><line class="ext" x1="120" y1="455" x2="120" y2="487"/><line class="ext" x1="620" y1="455" x2="620" y2="487"/><line class="dim" x1="120" y1="483" x2="620" y2="483"/><line class="dim" x1="117" y1="486" x2="123" y2="480"/><line class="dim" x1="617" y1="486" x2="623" y2="480"/><text class="dimt" x="370" y="479" text-anchor="middle">框 1000</text><line class="ext" x1="620" y1="455" x2="620" y2="487"/><line class="ext" x1="670" y1="455" x2="670" y2="487"/><line class="dim" x1="620" y1="483" x2="670" y2="483"/><line class="dim" x1="617" y1="486" x2="623" y2="480"/><line class="dim" x1="667" y1="486" x2="673" y2="480"/><text class="dimt" x="645" y="479" text-anchor="middle">外伸 100</text><line class="ext" x1="670" y1="455" x2="724" y2="455"/><line class="ext" x1="670" y1="77.5" x2="724" y2="77.5"/><line class="dim" x1="720" y1="455" x2="720" y2="77.5"/><line class="dim" x1="717" y1="458" x2="723" y2="452"/><line class="dim" x1="717" y1="80.5" x2="723" y2="74.5"/><text class="dimt" x="715" y="266.2" text-anchor="middle" transform="rotate(-90 715 266.2)">高 755</text><line class="ext" x1="120" y1="455" x2="40" y2="455"/><line class="ext" x1="120" y1="386" x2="40" y2="386"/><line class="dim" x1="44" y1="455" x2="44" y2="386"/><line class="dim" x1="41" y1="458" x2="47" y2="452"/><line class="dim" x1="41" y1="389" x2="47" y2="383"/><text class="dimt" x="39" y="420.5" text-anchor="middle" transform="rotate(-90 39 420.5)">離地 138</text><line class="ext" x1="120" y1="386" x2="40" y2="386"/><line class="ext" x1="120" y1="368" x2="40" y2="368"/><line class="dim" x1="44" y1="386" x2="44" y2="368"/><line class="dim" x1="41" y1="389" x2="47" y2="383"/><line class="dim" x1="41" y1="371" x2="47" y2="365"/><text class="dimt" x="39" y="377" text-anchor="middle" transform="rotate(-90 39 377)">36</text><line class="ext" x1="120" y1="368" x2="40" y2="368"/><line class="ext" x1="120" y1="253" x2="40" y2="253"/><line class="dim" x1="44" y1="368" x2="44" y2="253"/><line class="dim" x1="41" y1="371" x2="47" y2="365"/><line class="dim" x1="41" y1="256" x2="47" y2="250"/><text class="dimt" x="39" y="310.5" text-anchor="middle" transform="rotate(-90 39 310.5)">下層 230</text><line class="ext" x1="120" y1="253" x2="40" y2="253"/><line class="ext" x1="120" y1="235" x2="40" y2="235"/><line class="dim" x1="44" y1="253" x2="44" y2="235"/><line class="dim" x1="41" y1="256" x2="47" y2="250"/><line class="dim" x1="41" y1="238" x2="47" y2="232"/><text class="dimt" x="39" y="244" text-anchor="middle" transform="rotate(-90 39 244)">36</text><line class="ext" x1="120" y1="235" x2="40" y2="235"/><line class="ext" x1="120" y1="103" x2="40" y2="103"/><line class="dim" x1="44" y1="235" x2="44" y2="103"/><line class="dim" x1="41" y1="238" x2="47" y2="232"/><line class="dim" x1="41" y1="106" x2="47" y2="100"/><text class="dimt" x="39" y="169" text-anchor="middle" transform="rotate(-90 39 169)">中層 264</text><line class="ext" x1="120" y1="103" x2="40" y2="103"/><line class="ext" x1="120" y1="77.5" x2="40" y2="77.5"/><line class="dim" x1="44" y1="103" x2="44" y2="77.5"/><line class="dim" x1="41" y1="106" x2="47" y2="100"/><line class="dim" x1="41" y1="80.5" x2="47" y2="74.5"/><text class="dimt" x="39" y="90.2" text-anchor="middle" transform="rotate(-90 39 90.2)">上框36＋桌面15</text><text class="lbm" x="370" y="511" text-anchor="middle">從你站的那邊看過去。腳 740 落地，桌面 15 木芯板。</text></svg><figcaption>正視圖。框的兩頭跟腳的外側切齊，最上面那個框的頂面跟腳頂切齊。</figcaption></figure>
+  <figure><svg viewBox="0 0 720 520" role="img" aria-label="側視圖：桌面深 600，前後各外伸 50，框外緣 500；腳 36 × 54"><rect class="rail" x="268" y="368" width="184" height="18"/><rect class="rail2" x="253" y="368" width="15" height="18"/><rect class="rail2" x="452" y="368" width="15" height="18"/><rect class="rail" x="268" y="235" width="184" height="18"/><rect class="rail2" x="253" y="235" width="15" height="18"/><rect class="rail2" x="452" y="235" width="15" height="18"/><rect class="rail" x="268" y="85" width="184" height="18"/><rect class="rail2" x="253" y="85" width="15" height="18"/><rect class="rail2" x="452" y="85" width="15" height="18"/><rect class="leg" x="235" y="85" width="18" height="370"/><rect class="leg" x="467" y="85" width="18" height="370"/><rect class="ply" x="210" y="77.5" width="300" height="7.5"/><line class="ext" x1="190" y1="455" x2="530" y2="455"/><line class="ext" x1="210" y1="77.5" x2="210" y2="43.5"/><line class="ext" x1="510" y1="77.5" x2="510" y2="43.5"/><line class="dim" x1="210" y1="47.5" x2="510" y2="47.5"/><line class="dim" x1="207" y1="50.5" x2="213" y2="44.5"/><line class="dim" x1="507" y1="50.5" x2="513" y2="44.5"/><text class="dimt" x="360" y="43.5" text-anchor="middle">桌面深 600</text><line class="ext" x1="210" y1="455" x2="210" y2="487"/><line class="ext" x1="235" y1="455" x2="235" y2="487"/><line class="dim" x1="210" y1="483" x2="235" y2="483"/><line class="dim" x1="207" y1="486" x2="213" y2="480"/><line class="dim" x1="232" y1="486" x2="238" y2="480"/><text class="dimt" x="222.5" y="479" text-anchor="middle">50</text><line class="ext" x1="235" y1="455" x2="235" y2="487"/><line class="ext" x1="485" y1="455" x2="485" y2="487"/><line class="dim" x1="235" y1="483" x2="485" y2="483"/><line class="dim" x1="232" y1="486" x2="238" y2="480"/><line class="dim" x1="482" y1="486" x2="488" y2="480"/><text class="dimt" x="360" y="479" text-anchor="middle">框外緣 500</text><line class="ext" x1="485" y1="455" x2="485" y2="487"/><line class="ext" x1="510" y1="455" x2="510" y2="487"/><line class="dim" x1="485" y1="483" x2="510" y2="483"/><line class="dim" x1="482" y1="486" x2="488" y2="480"/><line class="dim" x1="507" y1="486" x2="513" y2="480"/><text class="dimt" x="497.5" y="479" text-anchor="middle">50</text><line class="dim" x1="235" y1="283" x2="253" y2="283"/><line class="dim" x1="232" y1="286" x2="238" y2="280"/><line class="dim" x1="250" y1="286" x2="256" y2="280"/><text class="dimt" x="244" y="279" text-anchor="middle">36</text><text class="lb" x="528" y="248">短撐 368</text><line class="ext" x1="524" y1="244" x2="360" y2="244"/><text class="lb" x="528" y="98">長邊的斷面 30 × 36</text><line class="ext" x1="524" y1="94" x2="467" y2="94"/><text class="lbm" x="200" y="511">左邊是你站的那邊，右邊是對面。</text></svg><figcaption>側視圖，從右手邊看過去。長邊貼在腳的內側，所以框外緣 500 剛好等於前後兩支腳外側的距離。</figcaption></figure>
+  <dl>
+    <dt>桌面</dt><dd>15 木芯板 <span class="n">1200 × 600</span>，左右各外伸 <span class="n">100</span>（好夾夾具、長料伸出去鋸），你站的那邊和對面各外伸 <span class="n">50</span></dd>
+    <dt>腳</dt><dd>寸二寸八 <span class="n">36 × 54 × 740</span>，4 支。54 那面朝左右</dd>
+    <dt>框</dt><dd>1寸寸2 立著放（36 高），長邊 <span class="n">1000</span> 2 支、短撐 <span class="n">368</span> 3 支，一個框外緣 <span class="n">1000 × 428</span>。同樣的框做 3 個</dd>
+    <dt>框的高度</dt><dd>框底離地 <span class="n">138</span>、<span class="n">404</span>、<span class="n">704</span></dd>
+    <dt>螺絲</dt><dd>2 吋（50）木工螺絲 60 支：組框 36 支、框鎖腳 24 支；1.5 吋（38）14 支鎖桌面。全部先鑽導孔再上膠</dd>
+  </dl>
+</section>
+
+<section data-for="cut" hidden>
+  <h2>1 下料</h2>
+  <p class="use">一張桌要寸二寸八 1 支、1寸寸2 3 支，都是 12 尺料。桌面用一片木芯板裁 1200 × 600。</p>
+  <figure><svg viewBox="0 0 760 366" role="img" aria-label="12 尺料下料：寸二寸八 1 支切 4 支腳 740；1寸寸2 兩支各切 1000 三段加 368 一段；第三支切 368 七段"><text class="lb" x="10" y="52">寸二寸八</text><text class="lbm" x="10" y="68">36 × 54</text><rect class="waste" x="110" y="40" width="618.1" height="18"/><rect class="leg" x="110" y="40" width="125.8" height="18"/><text class="dimt" x="172.9" y="74" text-anchor="middle">740</text><rect class="leg" x="236.3" y="40" width="125.8" height="18"/><text class="dimt" x="299.2" y="74" text-anchor="middle">740</text><rect class="leg" x="362.6" y="40" width="125.8" height="18"/><text class="dimt" x="425.5" y="74" text-anchor="middle">740</text><rect class="leg" x="488.9" y="40" width="125.8" height="18"/><text class="dimt" x="551.8" y="74" text-anchor="middle">740</text><text class="lbm" x="671.7" y="74" text-anchor="middle">剩約 660</text><text class="lb" x="10" y="126">1寸寸2 第 1 支</text><text class="lbm" x="10" y="142">30 × 36</text><rect class="waste" x="110" y="114" width="618.1" height="18"/><rect class="rail" x="110" y="114" width="170" height="18"/><text class="dimt" x="195" y="148" text-anchor="middle">1000</text><rect class="rail" x="280.5" y="114" width="170" height="18"/><text class="dimt" x="365.5" y="148" text-anchor="middle">1000</text><rect class="rail" x="451" y="114" width="170" height="18"/><text class="dimt" x="536" y="148" text-anchor="middle">1000</text><rect class="rail" x="621.5" y="114" width="62.6" height="18"/><text class="dimt" x="652.8" y="148" text-anchor="middle">368</text><text class="lbm" x="706.4" y="148" text-anchor="middle">剩約 260</text><text class="lb" x="10" y="200">1寸寸2 第 2 支</text><text class="lbm" x="10" y="216">30 × 36</text><rect class="waste" x="110" y="188" width="618.1" height="18"/><rect class="rail" x="110" y="188" width="170" height="18"/><text class="dimt" x="195" y="222" text-anchor="middle">1000</text><rect class="rail" x="280.5" y="188" width="170" height="18"/><text class="dimt" x="365.5" y="222" text-anchor="middle">1000</text><rect class="rail" x="451" y="188" width="170" height="18"/><text class="dimt" x="536" y="222" text-anchor="middle">1000</text><rect class="rail" x="621.5" y="188" width="62.6" height="18"/><text class="dimt" x="652.8" y="222" text-anchor="middle">368</text><text class="lbm" x="706.4" y="222" text-anchor="middle">剩約 260</text><text class="lb" x="10" y="274">1寸寸2 第 3 支</text><text class="lbm" x="10" y="290">30 × 36</text><rect class="waste" x="110" y="262" width="618.1" height="18"/><rect class="rail" x="110" y="262" width="62.6" height="18"/><text class="dimt" x="141.3" y="296" text-anchor="middle">368</text><rect class="rail" x="173.1" y="262" width="62.6" height="18"/><text class="dimt" x="204.4" y="296" text-anchor="middle">368</text><rect class="rail" x="236.1" y="262" width="62.6" height="18"/><text class="dimt" x="267.4" y="296" text-anchor="middle">368</text><rect class="rail" x="299.2" y="262" width="62.6" height="18"/><text class="dimt" x="330.5" y="296" text-anchor="middle">368</text><rect class="rail" x="362.3" y="262" width="62.6" height="18"/><text class="dimt" x="393.6" y="296" text-anchor="middle">368</text><rect class="rail" x="425.4" y="262" width="62.6" height="18"/><text class="dimt" x="456.6" y="296" text-anchor="middle">368</text><rect class="rail" x="488.4" y="262" width="62.6" height="18"/><text class="dimt" x="519.7" y="296" text-anchor="middle">368</text><text class="lbm" x="639.8" y="296" text-anchor="middle">剩約 1040</text><line class="dim" x1="110" y1="22" x2="728.1" y2="22"/><line class="dim" x1="107" y1="25" x2="113" y2="19"/><line class="dim" x1="725.1" y1="25" x2="731.1" y2="19"/><text class="dimt" x="419.1" y="18" text-anchor="middle">12 尺 ≈ 3636</text><text class="lbm" x="10" y="354">灰色是剩料。每刀鋸縫算 3。先切長的、再切短的，同一個長度用定長擋塊一次切完。</text></svg><figcaption>每支料怎麼切。同一個長度的零件，用定長擋塊一次切完，長度才會一模一樣。</figcaption></figure>
+  <div class="tw"><table class="cut">
+    <tr><th>零件</th><th>料</th><th>長度</th><th>數量</th><th>用在</th></tr>
+    <tr><td>腳</td><td>寸二寸八 36 × 54</td><td class="n">740</td><td class="n">4</td><td>四個角</td></tr>
+    <tr><td>長邊</td><td>1寸寸2 30 × 36</td><td class="n">1000</td><td class="n">6</td><td>每個框 2 支，共 3 個框</td></tr>
+    <tr><td>短撐</td><td>1寸寸2 30 × 36</td><td class="n">368</td><td class="n">9</td><td>每個框 3 支：左端、中間、右端</td></tr>
+    <tr><td>桌面</td><td>15 木芯板</td><td class="n">1200 × 600</td><td class="n">1</td><td>木條方向沿 1200 那邊</td></tr>
+  </table></div>
+  <ol class="steps">
+    <li>先把料的一頭切掉一小段，切出直角再開始量。</li>
+    <li>4 支腳一定要一樣長，桌子才不會晃。切完四支並排立在平台上，用直尺橫過頂面檢查。</li>
+    <li>9 支短撐也要一樣長，差 1 mm 框就會歪。</li>
+    <li>木芯板裁的時候，確認長的那邊（1200）跟裡面木條同方向。看板子側邊的斷面就看得到一條一條的木條。</li>
+  </ol>
+</section>
+
+<section data-for="frame" hidden>
+  <h2>2 組日字框</h2>
+  <p class="use">在地上平放組。3 個框做法完全一樣，先組好 3 個框再上腳。</p>
+  <figure><svg viewBox="0 0 720 430" role="img" aria-label="日字框俯視圖：長邊 1000 兩支、短撐 368 三支，框外緣 1000 × 428，短撐之間的空格各 455；每個接頭從長邊外側鎖 2 支 2 吋"><rect class="rail2" x="70" y="300.8" width="580" height="17.4"/><rect class="rail2" x="70" y="70" width="580" height="17.4"/><rect class="rail" x="70" y="87.4" width="17.4" height="213.4"/><line class="screw" x1="78.7" y1="318.2" x2="78.7" y2="289.2"/><circle class="screwh" cx="78.7" cy="318.2" r="2.2"/><line class="screw" x1="78.7" y1="70" x2="78.7" y2="99"/><circle class="screwh" cx="78.7" cy="70" r="2.2"/><rect class="rail" x="351.3" y="87.4" width="17.4" height="213.4"/><line class="screw" x1="360" y1="318.2" x2="360" y2="289.2"/><circle class="screwh" cx="360" cy="318.2" r="2.2"/><line class="screw" x1="360" y1="70" x2="360" y2="99"/><circle class="screwh" cx="360" cy="70" r="2.2"/><rect class="rail" x="632.6" y="87.4" width="17.4" height="213.4"/><line class="screw" x1="641.3" y1="318.2" x2="641.3" y2="289.2"/><circle class="screwh" cx="641.3" cy="318.2" r="2.2"/><line class="screw" x1="641.3" y1="70" x2="641.3" y2="99"/><circle class="screwh" cx="641.3" cy="70" r="2.2"/><line class="ext" x1="70" y1="70" x2="70" y2="40"/><line class="ext" x1="650" y1="70" x2="650" y2="40"/><line class="dim" x1="70" y1="44" x2="650" y2="44"/><line class="dim" x1="67" y1="47" x2="73" y2="41"/><line class="dim" x1="647" y1="47" x2="653" y2="41"/><text class="dimt" x="360" y="40" text-anchor="middle">長邊 1000</text><line class="ext" x1="70" y1="318.2" x2="70" y2="352.2"/><line class="ext" x1="87.4" y1="318.2" x2="87.4" y2="352.2"/><line class="dim" x1="70" y1="348.2" x2="87.4" y2="348.2"/><line class="dim" x1="67" y1="351.2" x2="73" y2="345.2"/><line class="dim" x1="84.4" y1="351.2" x2="90.4" y2="345.2"/><text class="dimt" x="78.7" y="344.2" text-anchor="middle">30</text><line class="ext" x1="87.4" y1="318.2" x2="87.4" y2="352.2"/><line class="ext" x1="351.3" y1="318.2" x2="351.3" y2="352.2"/><line class="dim" x1="87.4" y1="348.2" x2="351.3" y2="348.2"/><line class="dim" x1="84.4" y1="351.2" x2="90.4" y2="345.2"/><line class="dim" x1="348.3" y1="351.2" x2="354.3" y2="345.2"/><text class="dimt" x="219.3" y="344.2" text-anchor="middle">455</text><line class="ext" x1="351.3" y1="318.2" x2="351.3" y2="352.2"/><line class="ext" x1="368.7" y1="318.2" x2="368.7" y2="352.2"/><line class="dim" x1="351.3" y1="348.2" x2="368.7" y2="348.2"/><line class="dim" x1="348.3" y1="351.2" x2="354.3" y2="345.2"/><line class="dim" x1="365.7" y1="351.2" x2="371.7" y2="345.2"/><text class="dimt" x="360" y="344.2" text-anchor="middle">30</text><line class="ext" x1="368.7" y1="318.2" x2="368.7" y2="352.2"/><line class="ext" x1="632.6" y1="318.2" x2="632.6" y2="352.2"/><line class="dim" x1="368.7" y1="348.2" x2="632.6" y2="348.2"/><line class="dim" x1="365.7" y1="351.2" x2="371.7" y2="345.2"/><line class="dim" x1="629.6" y1="351.2" x2="635.6" y2="345.2"/><text class="dimt" x="500.6" y="344.2" text-anchor="middle">455</text><line class="ext" x1="632.6" y1="318.2" x2="632.6" y2="352.2"/><line class="ext" x1="650" y1="318.2" x2="650" y2="352.2"/><line class="dim" x1="632.6" y1="348.2" x2="650" y2="348.2"/><line class="dim" x1="629.6" y1="351.2" x2="635.6" y2="345.2"/><line class="dim" x1="647" y1="351.2" x2="653" y2="345.2"/><text class="dimt" x="641.3" y="344.2" text-anchor="middle">30</text><line class="ext" x1="650" y1="318.2" x2="680" y2="318.2"/><line class="ext" x1="650" y1="300.8" x2="680" y2="300.8"/><line class="dim" x1="676" y1="318.2" x2="676" y2="300.8"/><line class="dim" x1="673" y1="321.2" x2="679" y2="315.2"/><line class="dim" x1="673" y1="303.8" x2="679" y2="297.8"/><text class="dimt" x="671" y="309.5" text-anchor="middle" transform="rotate(-90 671 309.5)">30</text><line class="ext" x1="650" y1="300.8" x2="680" y2="300.8"/><line class="ext" x1="650" y1="87.4" x2="680" y2="87.4"/><line class="dim" x1="676" y1="300.8" x2="676" y2="87.4"/><line class="dim" x1="673" y1="303.8" x2="679" y2="297.8"/><line class="dim" x1="673" y1="90.4" x2="679" y2="84.4"/><text class="dimt" x="671" y="194.1" text-anchor="middle" transform="rotate(-90 671 194.1)">短撐 368</text><line class="ext" x1="650" y1="87.4" x2="680" y2="87.4"/><line class="ext" x1="650" y1="70" x2="680" y2="70"/><line class="dim" x1="676" y1="87.4" x2="676" y2="70"/><line class="dim" x1="673" y1="90.4" x2="679" y2="84.4"/><line class="dim" x1="673" y1="73" x2="679" y2="67"/><text class="dimt" x="671" y="78.7" text-anchor="middle" transform="rotate(-90 671 78.7)">30</text><line class="ext" x1="680" y1="318.2" x2="710" y2="318.2"/><line class="ext" x1="680" y1="70" x2="710" y2="70"/><line class="dim" x1="706" y1="318.2" x2="706" y2="70"/><line class="dim" x1="703" y1="321.2" x2="709" y2="315.2"/><line class="dim" x1="703" y1="73" x2="709" y2="67"/><text class="dimt" x="701" y="194.1" text-anchor="middle" transform="rotate(-90 701 194.1)">428</text><text class="lb" x="360" y="380.2" text-anchor="middle">中間短撐中心＝長邊正中間 500</text><text class="lbm" x="70" y="400">從上面往下看。黑線是螺絲：從長邊外側往內鎖進短撐，每個接頭上下各 1 支 2 吋，一個框 12 支。</text></svg><figcaption>日字框俯視圖。中間短撐的中心在長邊正中間（500）；三支短撐之間的空格都是 455。</figcaption></figure>
+  <ol class="steps">
+    <li>兩支長邊並排夾在一起，在 <span class="n">0～30</span>、<span class="n">485～515</span>、<span class="n">970～1000</span> 畫短撐的位置線，兩支一起畫才會對齊。</li>
+    <li>在長邊上、每個短撐位置的中線，上下各鑽 1 個導孔（離頂面、底面各約 10），從外側那面鑽。</li>
+    <li>兩支長邊立著放（36 高那面朝上），短撐夾在中間，兩端短撐的外側跟長邊的頭切齊。</li>
+    <li>短撐端面上膠，從長邊外側鎖 2 吋螺絲進短撐。先鎖四個角，用直角尺確認是直角，再鎖中間那支。</li>
+    <li>量兩條對角線，一樣長就是方的。差太多就推一下長的那條對角，趁膠還沒乾調正。</li>
+  </ol>
+</section>
+
+<section data-for="legs" hidden>
+  <h2>3 上腳</h2>
+  <p class="use">框鎖在腳的內側。先在 4 支腳上畫好三條框底線，再一個框一個框鎖上去。</p>
+  <figure><svg viewBox="0 0 720 420" role="img" aria-label="腳的畫線位置：從腳底量，框底離地 138、404、704，框頂跟腳頂切齊 740；角落俯視：長邊貼腳內側，從框內側往外鎖 2 支 2 吋"><rect class="leg" x="120" y="34.2" width="36.3" height="310.8"/><rect class="rail2" x="156.3" y="271.9" width="90" height="15.1"/><line class="kerf" x1="112" y1="287" x2="254.3" y2="287"/><rect class="rail2" x="156.3" y="160.2" width="90" height="15.1"/><line class="kerf" x1="112" y1="175.3" x2="254.3" y2="175.3"/><rect class="rail2" x="156.3" y="34.2" width="90" height="15.1"/><line class="kerf" x1="112" y1="49.3" x2="254.3" y2="49.3"/><line class="ext" x1="70" y1="345" x2="280" y2="345"/><line class="ext" x1="120" y1="345" x2="96" y2="345"/><line class="ext" x1="120" y1="287" x2="96" y2="287"/><line class="dim" x1="100" y1="345" x2="100" y2="287"/><line class="dim" x1="97" y1="348" x2="103" y2="342"/><line class="dim" x1="97" y1="290" x2="103" y2="284"/><text class="dimt" x="95" y="316" text-anchor="middle" transform="rotate(-90 95 316)">138</text><line class="ext" x1="120" y1="345" x2="66" y2="345"/><line class="ext" x1="120" y1="175.3" x2="66" y2="175.3"/><line class="dim" x1="70" y1="345" x2="70" y2="175.3"/><line class="dim" x1="67" y1="348" x2="73" y2="342"/><line class="dim" x1="67" y1="178.3" x2="73" y2="172.3"/><text class="dimt" x="65" y="260.2" text-anchor="middle" transform="rotate(-90 65 260.2)">404</text><line class="ext" x1="120" y1="345" x2="36" y2="345"/><line class="ext" x1="120" y1="49.3" x2="36" y2="49.3"/><line class="dim" x1="40" y1="345" x2="40" y2="49.3"/><line class="dim" x1="37" y1="348" x2="43" y2="342"/><line class="dim" x1="37" y1="52.3" x2="43" y2="46.3"/><text class="dimt" x="35" y="197.2" text-anchor="middle" transform="rotate(-90 35 197.2)">704</text><line class="ext" x1="233" y1="345" x2="299" y2="345"/><line class="ext" x1="233" y1="34.2" x2="299" y2="34.2"/><line class="dim" x1="295" y1="345" x2="295" y2="34.2"/><line class="dim" x1="292" y1="348" x2="298" y2="342"/><line class="dim" x1="292" y1="37.2" x2="298" y2="31.2"/><text class="dimt" x="290" y="189.6" text-anchor="middle" transform="rotate(-90 290 189.6)">腳長 740</text><text class="lbm" x="20" y="410">左：一支腳和三個框的長邊，紅虛線是要先畫在腳上的線（框底）。</text><rect class="leg" x="430" y="60" width="140.4" height="93.6"/><rect class="rail2" x="430" y="153.6" width="182" height="78"/><rect class="rail" x="430" y="231.6" width="78" height="78"/><line class="screw" x1="469" y1="231.6" x2="469" y2="101.6"/><circle class="screwh" cx="469" cy="231.6" r="2.2"/><line class="screw" x1="531.4" y1="231.6" x2="531.4" y2="101.6"/><circle class="screwh" cx="531.4" cy="231.6" r="2.2"/><line class="dim" x1="430" y1="48" x2="570.4" y2="48"/><line class="dim" x1="427" y1="51" x2="433" y2="45"/><line class="dim" x1="567.4" y1="51" x2="573.4" y2="45"/><text class="dimt" x="500.2" y="44" text-anchor="middle">54</text><line class="dim" x1="416" y1="60" x2="416" y2="153.6"/><line class="dim" x1="413" y1="63" x2="419" y2="57"/><line class="dim" x1="413" y1="156.6" x2="419" y2="150.6"/><text class="dimt" x="411" y="106.8" text-anchor="middle" transform="rotate(-90 411 106.8)">36</text><line class="dim" x1="416" y1="153.6" x2="416" y2="231.6"/><line class="dim" x1="413" y1="156.6" x2="419" y2="150.6"/><line class="dim" x1="413" y1="234.6" x2="419" y2="228.6"/><text class="dimt" x="411" y="192.6" text-anchor="middle" transform="rotate(-90 411 192.6)">30</text><text class="lb" x="620" y="110">腳</text><text class="lb" x="620" y="196">長邊</text><text class="lb" x="520" y="280">短撐（框的端頭）</text><text class="lbm" x="400" y="360">右：左手邊、你站的那邊那支腳，</text><text class="lbm" x="400" y="378">從上往下看。螺絲從框內側往外，</text><text class="lbm" x="400" y="396">穿過長邊 30、咬進腳 20。</text></svg><figcaption>左：腳上要畫的線。右：角落俯視，長邊貼著腳的內側，框的頭跟腳的外側切齊。</figcaption></figure>
+  <ol class="steps">
+    <li>4 支腳並排夾在一起，從腳底量 <span class="n">138</span>、<span class="n">404</span>、<span class="n">704</span> 畫線，四支一起畫。這是三個框的框底。</li>
+    <li>先上最下面的框：框側立，一頭的長邊靠在兩支腳上，框底對齊 138 的線，框的頭跟腳的外側切齊。</li>
+    <li>從框內側往外鑽導孔，每支腳 2 支 2 吋，一上一下錯開，穿過長邊 30、咬進腳 20。接觸面上膠。</li>
+    <li>同樣把中間框對 404、上框對 704 鎖上。上框的頂面應該剛好跟腳頂切齊（740）。</li>
+    <li>翻過來鎖另一邊的兩支腳。整個立起來，量四支腳的對角線，再用水平尺看桌腳是不是垂直。</li>
+  </ol>
+</section>
+
+<section data-for="top" hidden>
+  <h2>4 裝桌面</h2>
+  <p class="use">桌面從底下往上鎖，桌面上看不到螺絲。15 的木芯板很薄，沉孔深度一定要照圖鑽。</p>
+  <figure><svg viewBox="0 0 720 440" role="img" aria-label="桌面俯視圖：1200 × 600，左右外伸 100、前後外伸 50，14 支螺絲從框底往上鎖；木芯板的木條沿長向"><rect class="ply" x="60" y="60" width="600" height="300" fill-opacity=".5"/><rect class="asmr" x="110" y="302" width="500" height="15"/><rect class="asmr" x="110" y="103" width="500" height="15"/><rect class="asmr" x="110" y="118" width="15" height="184"/><rect class="asmr" x="352.5" y="118" width="15" height="184"/><rect class="asmr" x="595" y="118" width="15" height="184"/><rect class="asml" x="110" y="317" width="27" height="18"/><rect class="asml" x="110" y="85" width="27" height="18"/><rect class="asml" x="583" y="317" width="27" height="18"/><rect class="asml" x="583" y="85" width="27" height="18"/><circle class="screwh" cx="160" cy="309.5" r="3"/><circle class="screwh" cx="260" cy="309.5" r="3"/><circle class="screwh" cx="460" cy="309.5" r="3"/><circle class="screwh" cx="560" cy="309.5" r="3"/><circle class="screwh" cx="160" cy="110.5" r="3"/><circle class="screwh" cx="260" cy="110.5" r="3"/><circle class="screwh" cx="460" cy="110.5" r="3"/><circle class="screwh" cx="560" cy="110.5" r="3"/><circle class="screwh" cx="117.5" cy="255" r="3"/><circle class="screwh" cx="117.5" cy="165" r="3"/><circle class="screwh" cx="360" cy="255" r="3"/><circle class="screwh" cx="360" cy="165" r="3"/><circle class="screwh" cx="602.5" cy="255" r="3"/><circle class="screwh" cx="602.5" cy="165" r="3"/><line class="grain" x1="70" y1="310" x2="650" y2="310"/><line class="grain" x1="70" y1="260" x2="650" y2="260"/><line class="grain" x1="70" y1="210" x2="650" y2="210"/><line class="grain" x1="70" y1="160" x2="650" y2="160"/><line class="grain" x1="70" y1="110" x2="650" y2="110"/><line class="ext" x1="60" y1="60" x2="60" y2="32"/><line class="ext" x1="660" y1="60" x2="660" y2="32"/><line class="dim" x1="60" y1="36" x2="660" y2="36"/><line class="dim" x1="57" y1="39" x2="63" y2="33"/><line class="dim" x1="657" y1="39" x2="663" y2="33"/><text class="dimt" x="360" y="32" text-anchor="middle">1200</text><line class="ext" x1="60" y1="360" x2="60" y2="392"/><line class="ext" x1="110" y1="360" x2="110" y2="392"/><line class="dim" x1="60" y1="388" x2="110" y2="388"/><line class="dim" x1="57" y1="391" x2="63" y2="385"/><line class="dim" x1="107" y1="391" x2="113" y2="385"/><text class="dimt" x="85" y="384" text-anchor="middle">100</text><line class="ext" x1="110" y1="309.5" x2="110" y2="392"/><line class="ext" x1="160" y1="309.5" x2="160" y2="392"/><line class="dim" x1="110" y1="388" x2="160" y2="388"/><line class="dim" x1="107" y1="391" x2="113" y2="385"/><line class="dim" x1="157" y1="391" x2="163" y2="385"/><text class="dimt" x="135" y="384" text-anchor="middle">100</text><line class="ext" x1="160" y1="309.5" x2="160" y2="392"/><line class="ext" x1="260" y1="309.5" x2="260" y2="392"/><line class="dim" x1="160" y1="388" x2="260" y2="388"/><line class="dim" x1="157" y1="391" x2="163" y2="385"/><line class="dim" x1="257" y1="391" x2="263" y2="385"/><text class="dimt" x="210" y="384" text-anchor="middle">200</text><line class="ext" x1="260" y1="309.5" x2="260" y2="392"/><line class="ext" x1="460" y1="309.5" x2="460" y2="392"/><line class="dim" x1="260" y1="388" x2="460" y2="388"/><line class="dim" x1="257" y1="391" x2="263" y2="385"/><line class="dim" x1="457" y1="391" x2="463" y2="385"/><text class="dimt" x="360" y="384" text-anchor="middle">400</text><line class="ext" x1="460" y1="309.5" x2="460" y2="392"/><line class="ext" x1="560" y1="309.5" x2="560" y2="392"/><line class="dim" x1="460" y1="388" x2="560" y2="388"/><line class="dim" x1="457" y1="391" x2="463" y2="385"/><line class="dim" x1="557" y1="391" x2="563" y2="385"/><text class="dimt" x="510" y="384" text-anchor="middle">200</text><line class="ext" x1="560" y1="360" x2="560" y2="392"/><line class="ext" x1="610" y1="360" x2="610" y2="392"/><line class="dim" x1="560" y1="388" x2="610" y2="388"/><line class="dim" x1="557" y1="391" x2="563" y2="385"/><line class="dim" x1="607" y1="391" x2="613" y2="385"/><text class="dimt" x="585" y="384" text-anchor="middle">100</text><line class="ext" x1="610" y1="360" x2="610" y2="392"/><line class="ext" x1="660" y1="360" x2="660" y2="392"/><line class="dim" x1="610" y1="388" x2="660" y2="388"/><line class="dim" x1="607" y1="391" x2="613" y2="385"/><line class="dim" x1="657" y1="391" x2="663" y2="385"/><text class="dimt" x="635" y="384" text-anchor="middle">100</text><line class="ext" x1="660" y1="360" x2="688" y2="360"/><line class="ext" x1="660" y1="335" x2="688" y2="335"/><line class="dim" x1="684" y1="360" x2="684" y2="335"/><line class="dim" x1="681" y1="363" x2="687" y2="357"/><line class="dim" x1="681" y1="338" x2="687" y2="332"/><text class="dimt" x="679" y="347.5" text-anchor="middle" transform="rotate(-90 679 347.5)">50</text><line class="ext" x1="660" y1="335" x2="688" y2="335"/><line class="ext" x1="660" y1="85" x2="688" y2="85"/><line class="dim" x1="684" y1="335" x2="684" y2="85"/><line class="dim" x1="681" y1="338" x2="687" y2="332"/><line class="dim" x1="681" y1="88" x2="687" y2="82"/><text class="dimt" x="679" y="210" text-anchor="middle" transform="rotate(-90 679 210)">500</text><line class="ext" x1="660" y1="85" x2="688" y2="85"/><line class="ext" x1="660" y1="60" x2="688" y2="60"/><line class="dim" x1="684" y1="85" x2="684" y2="60"/><line class="dim" x1="681" y1="88" x2="687" y2="82"/><line class="dim" x1="681" y1="63" x2="687" y2="57"/><text class="dimt" x="679" y="72.5" text-anchor="middle" transform="rotate(-90 679 72.5)">50</text><line class="ext" x1="117.5" y1="255" x2="38" y2="255"/><line class="ext" x1="117.5" y1="165" x2="38" y2="165"/><line class="dim" x1="42" y1="255" x2="42" y2="165"/><line class="dim" x1="39" y1="258" x2="45" y2="252"/><line class="dim" x1="39" y1="168" x2="45" y2="162"/><text class="dimt" x="37" y="210" text-anchor="middle" transform="rotate(-90 37 210)">180</text><line class="ext" x1="60" y1="360" x2="16" y2="360"/><line class="ext" x1="60" y1="60" x2="16" y2="60"/><line class="dim" x1="20" y1="360" x2="20" y2="60"/><line class="dim" x1="17" y1="363" x2="23" y2="357"/><line class="dim" x1="17" y1="63" x2="23" y2="57"/><text class="dimt" x="15" y="210" text-anchor="middle" transform="rotate(-90 15 210)">600</text><text class="lb" x="360" y="144" text-anchor="middle">細線＝木芯板裡木條的方向，要跟 1200 那邊平行</text><text class="lbm" x="60" y="430">從上面往下看，你站在下方。虛線是底下的框和腳，黑點是 14 支螺絲（長邊各 4、短撐各 2）。</text></svg><figcaption>桌面俯視圖。長邊上的螺絲在 200、400、800、1000，短撐上的螺絲離桌面中線前後各 90。</figcaption></figure>
+  <figure><svg viewBox="0 0 720 390" role="img" aria-label="桌面螺絲剖面：框底鑽直徑 10、深 8 的沉孔，1.5 吋（38）螺絲穿過框 28、咬進桌面 10，離桌面還有 5"><rect class="ply" x="90" y="60" width="360" height="75"/><rect class="rail" x="150" y="135" width="150" height="180"/><rect class="hole" x="200" y="275" width="50" height="40"/><rect class="screwb" x="215" y="85" width="20" height="190"/><rect class="screwhd" x="205" y="275" width="40" height="8"/><line class="ext" x1="450" y1="60" x2="406" y2="60"/><line class="ext" x1="450" y1="135" x2="406" y2="135"/><line class="dim" x1="410" y1="60" x2="410" y2="135"/><line class="dim" x1="407" y1="63" x2="413" y2="57"/><line class="dim" x1="407" y1="138" x2="413" y2="132"/><text class="dimt" x="405" y="97.5" text-anchor="middle" transform="rotate(-90 405 97.5)">桌面 15</text><line class="ext" x1="235" y1="60" x2="374" y2="60"/><line class="ext" x1="235" y1="85" x2="374" y2="85"/><line class="dim" x1="370" y1="60" x2="370" y2="85"/><line class="dim" x1="367" y1="63" x2="373" y2="57"/><line class="dim" x1="367" y1="88" x2="373" y2="82"/><text class="dimt" x="365" y="72.5" text-anchor="middle" transform="rotate(-90 365 72.5)">5</text><line class="ext" x1="235" y1="85" x2="374" y2="85"/><line class="ext" x1="235" y1="135" x2="374" y2="135"/><line class="dim" x1="370" y1="85" x2="370" y2="135"/><line class="dim" x1="367" y1="88" x2="373" y2="82"/><line class="dim" x1="367" y1="138" x2="373" y2="132"/><text class="dimt" x="365" y="110" text-anchor="middle" transform="rotate(-90 365 110)">咬 10</text><line class="ext" x1="300" y1="135" x2="334" y2="135"/><line class="ext" x1="300" y1="315" x2="334" y2="315"/><line class="dim" x1="330" y1="135" x2="330" y2="315"/><line class="dim" x1="327" y1="138" x2="333" y2="132"/><line class="dim" x1="327" y1="318" x2="333" y2="312"/><text class="dimt" x="325" y="225" text-anchor="middle" transform="rotate(-90 325 225)">框 36</text><line class="ext" x1="200" y1="275" x2="116" y2="275"/><line class="ext" x1="200" y1="315" x2="116" y2="315"/><line class="dim" x1="120" y1="275" x2="120" y2="315"/><line class="dim" x1="117" y1="278" x2="123" y2="272"/><line class="dim" x1="117" y1="318" x2="123" y2="312"/><text class="dimt" x="115" y="295" text-anchor="middle" transform="rotate(-90 115 295)">沉孔 8</text><line class="ext" x1="200" y1="315" x2="200" y2="343"/><line class="ext" x1="250" y1="315" x2="250" y2="343"/><line class="dim" x1="200" y1="339" x2="250" y2="339"/><line class="dim" x1="197" y1="342" x2="203" y2="336"/><line class="dim" x1="247" y1="342" x2="253" y2="336"/><text class="dimt" x="225" y="335" text-anchor="middle">Ø10</text><text class="lb" x="470" y="90">木芯板</text><text class="lb" x="470" y="225">框（1寸寸2）</text><text class="lb" x="470" y="291">1.5 吋木工螺絲（38）</text><text class="lbm" x="20" y="378">從框的長向看過去的斷面。沉孔一定要鑽到 8，螺絲才不會從桌面冒出來。</text></svg><figcaption>螺絲剖面。沉孔 Ø10 深 8，1.5 吋螺絲才咬進桌面 10、不會穿出來。</figcaption></figure>
+  <ol class="steps">
+    <li>先在上框的底面標出 14 個螺絲位置：兩支長邊各 4 個（200、400、800、1000），三支短撐各 2 個（離中線前後 90）。</li>
+    <li>用 10 mm 鑽頭從框底鑽沉孔，深 8（鑽頭上貼膠帶當記號），再用細鑽頭把剩下的 28 鑽穿當導孔。</li>
+    <li>桌面正面朝下放在平地上，桌腳倒過來放上去，桌面四邊照圖對齊：左右各外伸 100、前後各外伸 50。</li>
+    <li>框頂面上膠，從沉孔鎖 1.5 吋螺絲，鎖到螺絲頭貼住沉孔底就停，別再用力。</li>
+    <li>翻正，摸一下桌面有沒有螺絲頂出來的凸點。</li>
+  </ol>
+</section>
+
+<p class="note">這份圖到「桌腳直接落地」為止，沒有畫輪子。輪子改用 GD-60S 的話，腳要配合輪子高度鋸短、腳底打預埋螺母，那部分等定案再補。</p>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script>
+(function(){
+  var stage=document.getElementById('stage3d'), cap=document.getElementById('cap3d');
+  if(!window.THREE){ cap.textContent='立體圖載入失敗，請看下面的平面圖。'; return; }
+  var T=THREE, renderer;
+  try{ renderer=new T.WebGLRenderer({antialias:true,alpha:true}); }
+  catch(e){ cap.textContent='這個瀏覽器開不了立體圖，請看下面的平面圖。'; return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  stage.appendChild(renderer.domElement);
+  var scene=new T.Scene();
+  var cam=new T.PerspectiveCamera(32,1.6,50,30000);
+  scene.add(new T.HemisphereLight(0xffffff,0x8a8f8c,0.95));
+  var sun=new T.DirectionalLight(0xffffff,0.6); sun.position.set(1500,2600,1800); scene.add(sun);
+  function M(c){ return new T.MeshLambertMaterial({color:c}); }
+  var mat={leg:M(0xc79a5e),rail:M(0xe0cf8c),ply:M(0xdcbd86),waste:M(0x9aa3a0),screw:M(0x2e3836)};
+  var lineMat=new T.LineBasicMaterial({color:0x1c2523,transparent:true,opacity:0.4});
+  function outline(o,g){ o.add(new T.LineSegments(new T.EdgesGeometry(g),lineMat)); }
+  // 模型座標（x 長向、y 深向 0＝你站的那邊、z 高）轉成畫面：桌子中心在原點，你站在 +Z
+  function box(p,m,x0,x1,y0,y1,z0,z1){
+    var g=new T.BoxGeometry(x1-x0,z1-z0,y1-y0), o=new T.Mesh(g,m);
+    o.position.set((x0+x1)/2-600,(z0+z1)/2,300-(y0+y1)/2); outline(o,g); p.add(o); return o;
+  }
+  var L=1200,W=600,H=755,TOP=15,LEGH=740,LX=54,LY=36,ST=30,SH=36;
+  var X0=100,X1=1100,Y0=50,Y1=550,RY0=86,RY1=484,SHORT=368,BX=[100,585,1070],FZ=[138,404,704];
+  var LEGS=[[X0,Y0],[X1-LX,Y0],[X0,Y1-LY],[X1-LX,Y1-LY]];
+  var SCREWS=[];
+  [200,400,800,1000].forEach(function(x){ SCREWS.push([x,RY0+15]); SCREWS.push([x,RY1+15]); });
+  BX.forEach(function(b){ SCREWS.push([b+15,210]); SCREWS.push([b+15,390]); });
+  function frame(p,z){
+    var g=new T.Group(); p.add(g);
+    [RY0,RY1].forEach(function(y){ box(g,mat.rail,X0,X1,y,y+ST,0,SH); });
+    var br=BX.map(function(x){ return box(g,mat.rail,x,x+ST,RY0+ST,RY1,0,SH); });
+    g.position.y=z; return {g:g,br:br};
+  }
+  function ease(x){ x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x); }
+  var build={
+    all:function(){
+      var r=new T.Group();
+      LEGS.forEach(function(q){ box(r,mat.leg,q[0],q[0]+LX,q[1],q[1]+LY,0,LEGH); });
+      FZ.forEach(function(z){ frame(r,z); });
+      box(r,mat.ply,0,L,0,W,LEGH,H);
+      return {r:r,spin:true,cam:[1500,1250,1900],tgt:[0,330,0],
+        cap:'整張桌子。4 支腳、3 個日字框、15 木芯板桌面，高 755。'};
+    },
+    cut:function(){
+      var r=new T.Group(), rows=[[[740,740,740,740],mat.leg,54,36],[[1000,1000,1000,368],mat.rail,36,30],
+        [[1000,1000,1000,368],mat.rail,36,30],[[368,368,368,368,368,368,368],mat.rail,36,30]], pcs=[];
+      rows.forEach(function(row,i){
+        var x=-1218, y=i*140;
+        row[0].forEach(function(len,j){
+          var g=new T.Group(); r.add(g); box(g,row[1],x,x+len,y,y+row[2],0,row[3]);
+          pcs.push({g:g,j:j}); x+=len+3;
+        });
+        box(r,mat.waste,x,2418,y,y+row[2],0,row[3]);
+      });
+      r.position.z=200;
+      function anim(u){ var k=u<0.15?0:u<0.55?ease((u-0.15)/0.4):u<0.85?1:1-ease((u-0.85)/0.15);
+        pcs.forEach(function(p){ p.g.position.x=p.j*60*k; p.g.position.y=k*20; }); }
+      return {r:r,anim:anim,cam:[0,4800,2600],tgt:[0,0,0],
+        cap:'4 支 12 尺料：寸二寸八切 4 支腳 740；1寸寸2 兩支各切 1000 三段加 368；第三支切 368 七段。灰色是剩料。'};
+    },
+    frame:function(){
+      var r=new T.Group(), f=frame(r,0);
+      function anim(u){
+        f.br.forEach(function(b,i){ var s=ease((u-0.08-i*0.2)/0.18); b.position.y=SH/2+(1-s)*260; b.visible=u>0.06+i*0.2; });
+      }
+      return {r:r,anim:anim,cam:[900,1100,1300],tgt:[0,0,0],
+        cap:'兩支長邊立著放，三支短撐依序放進去：兩端跟長邊的頭切齊，中間那支在正中間。從長邊外側鎖螺絲。同樣的框做 3 個。'};
+    },
+    legs:function(){
+      var r=new T.Group(), legs=[];
+      FZ.forEach(function(z){ frame(r,z); });
+      LEGS.forEach(function(q){ var g=new T.Group(); r.add(g); box(g,mat.leg,q[0],q[0]+LX,q[1],q[1]+LY,0,LEGH); legs.push({g:g,d:q[1]<300?1:-1}); });
+      function anim(u){
+        legs.forEach(function(l,i){ var s=ease((u-0.06-i*0.17)/0.15); l.g.position.z=l.d*(1-s)*320; l.g.visible=u>0.04+i*0.17; });
+      }
+      return {r:r,anim:anim,cam:[1500,1100,1700],tgt:[0,330,0],
+        cap:'三個框對齊腳上畫好的線（框底 138、404、704），腳靠在長邊外側，從框內側往外鎖。上框頂面跟腳頂切齊。'};
+    },
+    top:function(){
+      var r=new T.Group(), sc=[];
+      LEGS.forEach(function(q){ box(r,mat.leg,q[0],q[0]+LX,q[1],q[1]+LY,0,LEGH); });
+      FZ.forEach(function(z){ frame(r,z); });
+      var tg=new T.Group(); r.add(tg); box(tg,mat.ply,0,L,0,W,LEGH,H);
+      SCREWS.forEach(function(q){ var g=new T.Group(); r.add(g); box(g,mat.screw,q[0]-3,q[0]+3,q[1]-3,q[1]+3,LEGH-28,LEGH+10); sc.push(g); });
+      function anim(u){
+        tg.position.y=(1-ease(u/0.35))*300;
+        sc.forEach(function(g,i){ var s=ease((u-0.42-i*0.025)/0.08); g.position.y=-(1-s)*160; g.visible=u>0.4+i*0.025; });
+      }
+      return {r:r,anim:anim,cam:[1300,520,1700],tgt:[0,520,0],
+        cap:'桌面放上去，四邊對齊外伸 100 和 50。14 支 1.5 吋螺絲從框底的沉孔往上鎖，咬進桌面 10。'};
+    }
+  };
+  var controls=new T.OrbitControls(cam,renderer.domElement);
+  controls.enableZoom=false; controls.enablePan=false; controls.enableDamping=true;
+  controls.maxPolarAngle=Math.PI*0.49;
+  var cache={}, cur=null, DUR=7000;
+  var playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var tt=playing?0:0.7*DUR, last=0;
+  var tabs=[].slice.call(document.querySelectorAll('.tab[data-k]')), playBtn=document.getElementById('btn-play');
+  var secs=[].slice.call(document.querySelectorAll('section[data-for]'));
+  function show(k){
+    if(cur) scene.remove(cur.r);
+    cur=cache[k]||(cache[k]=build[k]()); scene.add(cur.r);
+    cam.position.set(cur.cam[0],cur.cam[1],cur.cam[2]); controls.target.set(cur.tgt[0],cur.tgt[1],cur.tgt[2]);
+    controls.autoRotate=!!cur.spin&&playing;
+    cap.textContent=cur.cap;
+    tabs.forEach(function(b){ b.setAttribute('aria-pressed',b.dataset.k===k?'true':'false'); });
+    secs.forEach(function(x){ x.hidden=x.dataset.for!==k; });
+    if(playing) tt=0;
+  }
+  tabs.forEach(function(b){ b.addEventListener('click',function(){ show(b.dataset.k); }); });
+  function label(){ playBtn.textContent=playing?'暫停':'播放'; }
+  playBtn.addEventListener('click',function(){ playing=!playing; controls.autoRotate=!!cur.spin&&playing; label(); });
+  label();
+  function fit(){
+    var w=stage.clientWidth, h=stage.clientHeight; if(!w||!h) return;
+    renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
+  }
+  if(window.ResizeObserver) new ResizeObserver(fit).observe(stage); else window.addEventListener('resize',fit);
+  show('all'); fit();
+  function frameLoop(now){
+    var dt=last?Math.min(100,now-last):0; last=now;
+    if(playing) tt=(tt+dt)%DUR;
+    if(cur.anim) cur.anim(tt/DUR);
+    controls.update(); renderer.render(scene,cam);
+    requestAnimationFrame(frameLoop);
+  }
+  requestAnimationFrame(frameLoop);
+})();
+</script>
+</body>
+</html>
