@@ -20,6 +20,7 @@ house-2f/       一頁一個子資料夾：index.html＋它要用的檔案（glb
 
 1. 開子資料夾（英文小寫加連字號，例如 `house-1f/`），放 `index.html` 和它要用的檔案。
 2. 在根目錄的 `index.html` 的 `<ul>` 裡加一行 `<li><a href="資料夾/">…</a></li>`。
+   子頁面最上面要放一個回主選單的小連結（`<a class="home-link" href="../">← 主選單</a>`）：文件頁放在 `h1` 上方，13px、淡色；全螢幕的 3D 頁固定在右上角，做成半透明小膠囊（左上角是控制卡）。頁面是從別處的原始檔或產生器出來的，連結要加在原始檔裡，不然重新產生就沒了。
 3. commit、push 到 `main`。commit message 照使用者的規則：一行寫得完就一行，不加 AI 署名。
 4. 確認上線：
    - `gh api repos/BensonAlphacore/github_three/pages --jq .status` 等到 `built`
