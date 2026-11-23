@@ -552,7 +552,9 @@ figcaption.ttl{border-top:none;border-bottom:1px solid var(--line);color:var(--i
   var playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
   var tt=playing?0:0.3*DUR, last=0;
   var tabs=[].slice.call(document.querySelectorAll('.tab[data-k]')), playBtn=document.getElementById('btn-play');
+  var curK;
   function show(k){
+    curK=k;
     if(cur) scene.remove(cur.r);
     cur=cache[k]||(cache[k]=build[k]()); scene.add(cur.r);
     cam.position.set(cur.cam[0],cur.cam[1],cur.cam[2]); controls.target.set(cur.tgt[0],cur.tgt[1],cur.tgt[2]);
@@ -583,7 +585,9 @@ figcaption.ttl{border-top:none;border-bottom:1px solid var(--line);color:var(--i
     renderer.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix();
   }
   if(window.ResizeObserver) new ResizeObserver(fit).observe(stage); else window.addEventListener('resize',fit);
-  show('cross'); fit();
+  // 網址最後的 #csaw 這類記著目前分頁，重新整理或分享連結都開回同一個
+  var k0=location.hash.slice(1); show(build[k0]?k0:'cross'); fit();
+  window.addEventListener('hashchange',function(){ var k=location.hash.slice(1); if(build[k]&&k!==curK) show(k); });
   function frame(now){
     var dt=last?Math.min(100,now-last):0; last=now;
     if(playing){ tt=(tt+dt)%DUR; blade.rotation.y+=dt*0.02; }
@@ -1312,11 +1316,17 @@ figcaption.ttl{border-top:none;border-bottom:1px solid var(--line);color:var(--i
 <script>
 (function(){
   var secs=[].slice.call(document.querySelectorAll('section[data-for]'));
-  function pick(k){ secs.forEach(function(x){ x.hidden=x.dataset.for.split(' ').indexOf(k)<0; }); }
-  [].slice.call(document.querySelectorAll('.tab[data-k]')).forEach(function(b){
-    b.addEventListener('click',function(){ pick(b.dataset.k); });
+  var btns=[].slice.call(document.querySelectorAll('.tab[data-k]')), keys=btns.map(function(b){ return b.dataset.k; }), curK;
+  function pick(k){ curK=k; secs.forEach(function(x){ x.hidden=x.dataset.for.split(' ').indexOf(k)<0; }); }
+  function fromHash(){ var k=location.hash.slice(1); return keys.indexOf(k)>=0?k:'cross'; }
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){
+      pick(b.dataset.k);
+      if(location.hash!=='#'+b.dataset.k) location.replace('#'+b.dataset.k);   // 記在網址，不多一筆上一頁
+    });
   });
-  pick('cross');
+  window.addEventListener('hashchange',function(){ var k=fromHash(); if(k!==curK) pick(k); });
+  pick(fromHash());
 })();
 </script>
 
