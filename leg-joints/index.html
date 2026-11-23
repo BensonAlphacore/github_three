@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>桌腳和框的接法</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* 版面照 tablesaw-sleds：上面立體動畫＋步驟分頁，下面跟著顯示那一步的尺寸圖和說明 */
+:root{
+  --bg:#edf0ee; --panel:#f8faf9; --ink:#1c2523; --muted:#5b6a66; --line:#c3ccc8;
+  --ply:#dcbd86; --ply-edge:#8f6f3a; --leg:#c79a5e; --rail:#e0cf8c; --rail2:#cdb86e; --waste:#d5dad8;
+  --blade:#cf3327;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141a19; --panel:#1b2322; --ink:#e4ebe8; --muted:#94a39f; --line:#35413e;
+  --ply:#8b6d3d; --ply-edge:#d0ab6c; --leg:#a37a45; --rail:#9c8c4f; --rail2:#86763d; --waste:#2c3533;
+  --blade:#ff5b4d; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141a19; --panel:#1b2322; --ink:#e4ebe8; --muted:#94a39f; --line:#35413e;
+  --ply:#8b6d3d; --ply-edge:#d0ab6c; --leg:#a37a45; --rail:#9c8c4f; --rail2:#86763d; --waste:#2c3533;
+  --blade:#ff5b4d; color-scheme:dark }
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7}
+[hidden]{display:none!important}
+.wrap{max-width:860px;margin:0 auto;padding-block:36px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:40px}
+h1{font-size:30px;line-height:1.25;margin:0;font-weight:700;text-wrap:balance}
+h2{font-size:22px;margin:0;font-weight:700}
+p{margin:0;max-width:38em}
+.lead{color:var(--muted)}
+header,section{display:flex;flex-direction:column;gap:14px}
+.use{font-weight:500}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:560px;height:auto;color:var(--ink)}
+figcaption{padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:15px}
+dt{color:var(--muted)}
+dd{margin:0;min-width:0}
+.n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.93em}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:12px;border:1px solid var(--ply-edge);display:inline-block}
+.note{border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:14px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font:inherit;font-size:15px;font-weight:500;padding:7px 16px;border-radius:4px;cursor:pointer;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible{outline:2px solid var(--blade);outline-offset:2px}
+.tab.play{margin-left:auto}
+#stage3d{width:100%;aspect-ratio:16/10;max-width:100%;cursor:grab}
+#stage3d canvas{display:block;width:100%;height:100%}
+.steps{margin:0;padding-left:1.5em;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.sub{font-size:16px;font-weight:600;margin:6px 0 0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.two figure svg{min-width:0}
+.tw{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.cut{border-collapse:collapse;font-size:14px;width:100%;min-width:560px}
+.cut th,.cut td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.cut th{color:var(--muted);font-weight:500;white-space:nowrap}
+.cut tr:last-child td{border-bottom:none}
+/* SVG 零件 */
+.ply{fill:var(--ply);stroke:var(--ply-edge);stroke-width:1.2}
+.leg{fill:var(--leg);stroke:var(--ink);stroke-width:1}
+.rail{fill:var(--rail);stroke:var(--ink);stroke-width:1}
+.rail2{fill:var(--rail2);stroke:var(--ink);stroke-width:1}
+.waste{fill:var(--waste);stroke:var(--muted);stroke-width:.8}
+.asmr,.asml{fill:none;stroke:var(--ink);stroke-width:.9;stroke-dasharray:4 3}
+.asml{fill:var(--leg);fill-opacity:.35}
+.grain{stroke:var(--ply-edge);stroke-width:.7;opacity:.6}
+.hole{fill:var(--bg);stroke:var(--ink);stroke-width:1}
+.screwb{fill:#7d8a90;stroke:var(--ink);stroke-width:.8}
+.screwhd{fill:var(--ink)}
+.screw{stroke:var(--ink);stroke-width:1.6}
+.screwh{fill:var(--ink)}
+.kerf{stroke:var(--blade);stroke-width:1.2;stroke-dasharray:4 3;fill:none}
+.dim{stroke:currentColor;stroke-width:.8;fill:none}
+.ext{stroke:var(--muted);stroke-width:.6;fill:none}
+.dimt{fill:currentColor;font-family:var(--mono);font-size:11px}
+.lb{fill:currentColor;font-family:var(--sans);font-size:12.5px}
+.lbm{fill:var(--muted);font-family:var(--sans);font-size:12px}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.parts figure svg,.mini figure svg{min-width:0}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+figcaption.ttl{border-top:none;border-bottom:1px solid var(--line);color:var(--ink);font-weight:600;font-size:15px}
+.ie{fill:none;stroke:var(--ink);stroke-width:.7;stroke-linejoin:round}
+.ip{fill:var(--ply)} .iw{fill:var(--leg)} .ir{fill:var(--rail)} .is{fill:#4a4f52}
+.sh0{fill:#fff;fill-opacity:.12} .sh2{fill:#000;fill-opacity:.22}
+.dot{fill:currentColor}
+.asm{stroke:var(--muted);stroke-width:.9;stroke-dasharray:4 3;fill:none}
+.bar{display:flex;justify-content:flex-end}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.cards figure svg{min-width:0}
+.info{padding:10px 14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;font-size:14.5px}
+.info dl{font-size:14px}
+.ir2{fill:var(--rail2)} .im{fill:#9aa4aa}
+.hid{stroke:var(--ink);stroke-width:1.3;stroke-dasharray:3 2;fill:none}
+.hidb{stroke:var(--ink);stroke-width:2.6;stroke-dasharray:5 2;fill:none}
+.scrh{fill:var(--ink)} .bolth{fill:var(--panel);stroke:var(--ink);stroke-width:1.4}
+.warn{fill:var(--blade);fill-opacity:.32}
+.rail2s{fill:none;stroke:var(--ink);stroke-width:1.2}
+.legs{fill:none;stroke:var(--ink);stroke-width:1;stroke-dasharray:5 3}
+.bracel{fill:var(--rail2);fill-opacity:.35;stroke:var(--muted);stroke-width:.8}
+.h1{fill:var(--ink)} .h2{fill:var(--panel);stroke:var(--ink);stroke-width:1.6}
+a{color:inherit;text-decoration-color:var(--muted);text-underline-offset:2px}
+ul.list{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px;font-size:15px;max-width:42em}
+.src{font-size:13.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>桌腳和框的接法</h1>
+  <p class="lead">做木工桌時發現：組框的螺絲和鎖腳的螺絲擠在長邊端頭同一段。這頁整理實際的工作桌教學、論壇經驗、強度測試和木材規範，看別人的腳和框是怎麼接的。每一條都附來源。單位 mm。</p>
+  <div class="legend"><span><i class="sw" style="background:var(--leg)"></i>腳</span><span><i class="sw" style="background:var(--rail)"></i>長邊</span><span><i class="sw" style="background:var(--rail2)"></i>短邊、短撐</span><span>黑點加虛線：螺絲（虛線是埋在木頭裡的部分）</span><span>空心圈加粗虛線：螺栓</span></div>
+</header>
+
+<section>
+  <h2>腳和框怎麼擺：6 種結構</h2>
+  <p>看了 19 份實際的工作桌教學，腳和框的擺法可以分成這 6 種。圖都畫一個轉角，從前面偏左往右後看，腳和橫料照你木工桌的尺寸（腳 54 × 36、橫料 30 × 36）。</p>
+  <div class="cards">
+<figure>
+<figcaption class="ttl">第 1 種：腳當轉角，橫料夾在兩腳中間</figcaption>
+<svg viewBox="0 0 420 285" role="img" aria-label="第 1 種：腳當轉角，長邊和短邊都夾在腳旁邊，從腳的兩個面鎖進橫料端頭，螺絲上下錯開"><path class="ir2" d="M133.7 141.4L151.7 141.4L151.7 119.8L133.7 119.8Z"/><path class="ie" d="M133.7 141.4L151.7 141.4L151.7 119.8L133.7 119.8Z"/><path class="ir2" d="M133.7 119.8L151.7 119.8L214.1 71L196.1 71Z"/><path class="sh0" d="M133.7 119.8L151.7 119.8L214.1 71L196.1 71Z"/><path class="ie" d="M133.7 119.8L151.7 119.8L214.1 71L196.1 71Z"/><path class="ir2" d="M151.7 141.4L214.1 92.6L214.1 71L151.7 119.8Z"/><path class="sh2" d="M151.7 141.4L214.1 92.6L214.1 71L151.7 119.8Z"/><path class="ie" d="M151.7 141.4L214.1 92.6L214.1 71L151.7 119.8Z"/><path class="iw" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="ie" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="iw" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="sh0" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="ie" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="iw" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="sh2" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="ie" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="ir" d="M151.1 147.4L298.7 147.4L298.7 125.8L151.1 125.8Z"/><path class="ie" d="M151.1 147.4L298.7 147.4L298.7 125.8L151.1 125.8Z"/><path class="ir" d="M151.1 125.8L298.7 125.8L305.8 120.3L158.2 120.3Z"/><path class="sh0" d="M151.1 125.8L298.7 125.8L305.8 120.3L158.2 120.3Z"/><path class="ie" d="M151.1 125.8L298.7 125.8L305.8 120.3L158.2 120.3Z"/><path class="ir" d="M298.7 147.4L305.8 141.9L305.8 120.3L298.7 125.8Z"/><path class="sh2" d="M298.7 147.4L305.8 141.9L305.8 120.3L298.7 125.8Z"/><path class="ie" d="M298.7 147.4L305.8 141.9L305.8 120.3L298.7 125.8Z"/><line class="hid" x1="122.3" y1="140.5" x2="178.7" y2="140.5"/><circle class="scrh" cx="122.3" cy="140.5" r="2.4"/><line class="hid" x1="122.3" y1="127.3" x2="178.7" y2="127.3"/><circle class="scrh" cx="122.3" cy="127.3" r="2.4"/><line class="hid" x1="134.2" y1="137.2" x2="152.2" y2="123.2"/><circle class="scrh" cx="134.2" cy="137.2" r="2.4"/><line class="ext" x1="278.3" y1="123.1" x2="332" y2="70"/><text class="lb" x="335" y="74" text-anchor="start">長邊</text><text class="lbm" x="335" y="89" text-anchor="start">夾在兩腳中間</text><line class="ext" x1="198" y1="76.5" x2="170" y2="40"/><text class="lb" x="167" y="44" text-anchor="end">短邊</text><text class="lbm" x="167" y="59" text-anchor="end">夾在前後兩腳中間</text><line class="ext" x1="134.2" y1="137.2" x2="100" y2="200"/><text class="lb" x="97" y="204" text-anchor="end">兩個方向</text><text class="lbm" x="97" y="219" text-anchor="end">高度錯開</text></svg>
+<div class="info"><p>先做「兩支腳＋橫料」的側片，再用另一個方向的橫料把兩片接起來。每支橫料的端頭都頂在腳上。</p>
+<dl>
+<dt>誰這樣做</dt><dd><a href="https://sawsonskates.com/diy-2x4-workbench-plans/">Saws on Skates</a>、<a href="https://ana-white.com/woodworking-projects/build-your-first-workbench-free-beginners-guide-plans">Ana White 新手工作桌</a>、<a href="https://woodgears.ca/workbench/index.html">Matthias Wandel 工作桌</a>（端框）、<a href="https://images.finewoodworking.com/app/uploads/2021/07/07185858/Simple-Sturdy-Workbench_FINAL.pdf">FWW Simple, Sturdy Workbench（PDF）</a>、<a href="https://images.finewoodworking.com/app/uploads/2007/03/27164735/Basic_Workbench_Plans.pdf">Woodsmith Basic Workbench（PDF）</a>、Popular Woodworking 24 小時工作桌</dd>
+<dt>轉角螺絲</dt><dd>兩個方向都鎖進同一支腳，在腳裡面會交叉，要上下錯開。FWW Simple, Sturdy 的兩根螺桿高度差約 11 mm（7/16"）。</dd>
+<dt>好處</dt><dd>最常見，料最省，腳就是轉角，外觀乾淨。</dd>
+<dt>要注意</dt><dd>從腳外側鎖，吃的是橫料端面，咬力比側面差（見下面的數字）。所以多數教學改用斜孔螺絲，或用螺栓加螺帽。不能先在地上組框量對角線。</dd>
+<dt>能不能拆</dt><dd>螺絲版拆幾次孔會鬆；FWW、Woodsmith 用螺栓的版本可以拆。</dd>
+</dl></div>
+</figure>
+<figure>
+<figcaption class="ttl">第 2 種：橫料貼在腳的外側</figcaption>
+<svg viewBox="0 0 420 285" role="img" aria-label="第 2 種：長邊貼在腳的外側，面對面鎖，每角 2 支斜對角；短邊另外接在別的高度"><path class="ir2" d="M133.7 195.4L151.7 195.4L151.7 173.8L133.7 173.8Z"/><path class="ie" d="M133.7 195.4L151.7 195.4L151.7 173.8L133.7 173.8Z"/><path class="ir2" d="M133.7 173.8L151.7 173.8L214.1 125L196.1 125Z"/><path class="sh0" d="M133.7 173.8L151.7 173.8L214.1 125L196.1 125Z"/><path class="ie" d="M133.7 173.8L151.7 173.8L214.1 125L196.1 125Z"/><path class="ir2" d="M151.7 195.4L214.1 146.6L214.1 125L151.7 173.8Z"/><path class="sh2" d="M151.7 195.4L214.1 146.6L214.1 125L151.7 173.8Z"/><path class="ie" d="M151.7 195.4L214.1 146.6L214.1 125L151.7 173.8Z"/><path class="iw" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="ie" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="iw" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="sh0" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="ie" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="iw" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="sh2" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="ie" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="ir" d="M110.9 153.5L290.9 153.5L290.9 131.9L110.9 131.9Z"/><path class="ie" d="M110.9 153.5L290.9 153.5L290.9 131.9L110.9 131.9Z"/><path class="ir" d="M110.9 131.9L290.9 131.9L298 126.4L118 126.4Z"/><path class="sh0" d="M110.9 131.9L290.9 131.9L298 126.4L118 126.4Z"/><path class="ie" d="M110.9 131.9L290.9 131.9L298 126.4L118 126.4Z"/><path class="ir" d="M290.9 153.5L298 148L298 126.4L290.9 131.9Z"/><path class="sh2" d="M290.9 153.5L298 148L298 126.4L290.9 131.9Z"/><path class="ie" d="M290.9 153.5L298 148L298 126.4L290.9 131.9Z"/><line class="hidb" x1="119.3" y1="148.1" x2="134.9" y2="136"/><circle class="bolth" cx="119.3" cy="148.1" r="3.6"/><line class="hidb" x1="134.9" y1="137.3" x2="150.5" y2="125.2"/><circle class="bolth" cx="134.9" cy="137.3" r="3.6"/><line class="ext" x1="266.9" y1="131.9" x2="332" y2="70"/><text class="lb" x="335" y="74" text-anchor="start">長邊</text><text class="lbm" x="335" y="89" text-anchor="start">貼在腳外側</text><line class="ext" x1="198" y1="130.5" x2="332" y2="30"/><text class="lb" x="335" y="34" text-anchor="start">短邊</text><text class="lbm" x="335" y="49" text-anchor="start">高度不同</text><line class="ext" x1="119.3" y1="148.1" x2="100" y2="215"/><text class="lb" x="97" y="219" text-anchor="end">2 支斜對角</text></svg>
+<div class="info"><p>橫料的面貼著腳的面，從橫料鎖進腳（或螺栓穿過兩支），吃的都是側面。</p>
+<dl>
+<dt>誰這樣做</dt><dd><a href="https://woodgears.ca/workbench/index.html">Matthias Wandel 工作桌</a>（長邊，腳上開約 1/3 深的槽）、<a href="https://www.practicaldiy.com/carpentry/plans/work-bench/work-bench.php">PracticalDIY</a>（每角 2 支 M10 馬車螺栓，斜對角）</dd>
+<dt>轉角螺絲</dt><dd>同一個面上只有這一組；另一個方向的橫料放在不同高度，或做成第 1 種的端框。</dd>
+<dt>好處</dt><dd>螺絲吃側面；用螺栓時，鬆了可以再鎖緊。</dd>
+<dt>要注意</dt><dd>Wandel 說只靠螺絲撐垂直重量就夠，但開槽讓接點更穩。PracticalDIY 提醒裝好一個月後把螺栓再鎖一次。</dd>
+<dt>能不能拆</dt><dd>螺栓版可以拆。</dd>
+</dl></div>
+</figure>
+<figure>
+<figcaption class="ttl">第 3 種：腳做出缺口，橫料坐進去</figcaption>
+<svg viewBox="0 0 420 285" role="img" aria-label="第 3 種：腳用兩層疊黏、中間留缺口，長邊放進缺口坐在下面那塊上；短邊鎖在長邊上、放在腳旁邊"><path class="iw" d="M125.1 256.5L157.5 256.5L157.5 120.9L125.1 120.9Z"/><path class="ie" d="M125.1 256.5L157.5 256.5L157.5 120.9L125.1 120.9Z"/><path class="iw" d="M125.1 120.9L157.5 120.9L166 114.2L133.6 114.2Z"/><path class="sh0" d="M125.1 120.9L157.5 120.9L166 114.2L133.6 114.2Z"/><path class="ie" d="M125.1 120.9L157.5 120.9L166 114.2L133.6 114.2Z"/><path class="iw" d="M157.5 256.5L166 249.8L166 114.2L157.5 120.9Z"/><path class="sh2" d="M157.5 256.5L166 249.8L166 114.2L157.5 120.9Z"/><path class="ie" d="M157.5 256.5L166 249.8L166 114.2L157.5 120.9Z"/><path class="ir2" d="M169.5 142.5L187.5 142.5L187.5 120.9L169.5 120.9Z"/><path class="ie" d="M169.5 142.5L187.5 142.5L187.5 120.9L169.5 120.9Z"/><path class="ir2" d="M169.5 120.9L187.5 120.9L251.3 71L233.3 71Z"/><path class="sh0" d="M169.5 120.9L187.5 120.9L251.3 71L233.3 71Z"/><path class="ie" d="M169.5 120.9L187.5 120.9L251.3 71L233.3 71Z"/><path class="ir2" d="M187.5 142.5L251.3 92.6L251.3 71L187.5 120.9Z"/><path class="sh2" d="M187.5 142.5L251.3 92.6L251.3 71L187.5 120.9Z"/><path class="ie" d="M187.5 142.5L251.3 92.6L251.3 71L187.5 120.9Z"/><path class="iw" d="M118 262L150.4 262L150.4 148L118 148Z"/><path class="ie" d="M118 262L150.4 262L150.4 148L118 148Z"/><path class="iw" d="M118 148L150.4 148L157.5 142.5L125.1 142.5Z"/><path class="sh0" d="M118 148L150.4 148L157.5 142.5L125.1 142.5Z"/><path class="ie" d="M118 148L150.4 148L157.5 142.5L125.1 142.5Z"/><path class="iw" d="M150.4 262L157.5 256.5L157.5 142.5L150.4 148Z"/><path class="sh2" d="M150.4 262L157.5 256.5L157.5 142.5L150.4 148Z"/><path class="ie" d="M150.4 262L157.5 256.5L157.5 142.5L150.4 148Z"/><path class="ir" d="M118 148L298 148L298 126.4L118 126.4Z"/><path class="ie" d="M118 148L298 148L298 126.4L118 126.4Z"/><path class="ir" d="M118 126.4L298 126.4L305.1 120.9L125.1 120.9Z"/><path class="sh0" d="M118 126.4L298 126.4L305.1 120.9L125.1 120.9Z"/><path class="ie" d="M118 126.4L298 126.4L305.1 120.9L125.1 120.9Z"/><path class="ir" d="M298 148L305.1 142.5L305.1 120.9L298 126.4Z"/><path class="sh2" d="M298 148L305.1 142.5L305.1 120.9L298 126.4Z"/><path class="ie" d="M298 148L305.1 142.5L305.1 120.9L298 126.4Z"/><line class="hid" x1="126.4" y1="142.6" x2="140.6" y2="131.5"/><circle class="scrh" cx="126.4" cy="142.6" r="2.4"/><line class="hid" x1="142" y1="131.8" x2="156.2" y2="120.7"/><circle class="scrh" cx="142" cy="131.8" r="2.4"/><line class="hid" x1="171.4" y1="142.6" x2="189.1" y2="128.7"/><circle class="scrh" cx="171.4" cy="142.6" r="2.4"/><line class="hid" x1="171.4" y1="131.8" x2="189.1" y2="117.9"/><circle class="scrh" cx="171.4" cy="131.8" r="2.4"/><line class="ext" x1="124" y1="178" x2="100" y2="225"/><text class="lb" x="97" y="229" text-anchor="end">缺口下面那塊</text><text class="lbm" x="97" y="244" text-anchor="end">長邊坐在上面</text><line class="ext" x1="274" y1="126.4" x2="332" y2="70"/><text class="lb" x="335" y="74" text-anchor="start">長邊</text><line class="ext" x1="235.2" y1="76.5" x2="190" y2="40"/><text class="lb" x="187" y="44" text-anchor="end">短邊</text><text class="lbm" x="187" y="59" text-anchor="end">離開腳，鎖在長邊上</text></svg>
+<div class="info"><p>腳用兩片料疊黏，中間留一段空，橫料放進缺口，坐在下面那塊上，再從橫料鎖進腳。另一個方向的橫料不鎖進腳，而是鎖在長邊上、放在腳旁邊。</p>
+<dl>
+<dt>誰這樣做</dt><dd><a href="https://www.ana-white.com/woodworking-projects/easy-diy-garage-workshop-workbench">Ana White 車庫工作桌</a>、<a href="https://learn.kregtool.com/plans/diy-workbench/">Kreg DIY Workbench</a>、<a href="https://fixthisbuildthat.com/how-to-build-a-sturdy-workbench-using-cheap-wood/">Fix This Build That</a>、<a href="https://images.finewoodworking.com/app/uploads/2007/03/27164735/Basic_Workbench_Plans.pdf">Woodsmith Basic Workbench（PDF）</a>（端框）</dd>
+<dt>轉角螺絲</dt><dd>不會擠：短邊離開腳，自己鎖在長邊上。Ana White 車庫桌的短撐離長邊端頭約 89 mm（3.5"），剛好在腳外面。</dd>
+<dt>好處</dt><dd>重量由下面那塊直接撐住，不是只靠螺絲。不用開榫，圓鋸就做得出來。</dd>
+<dt>要注意</dt><dd>腳要多一層料，比較粗。</dd>
+<dt>能不能拆</dt><dd>不上膠、只用螺絲或螺栓就能拆。</dd>
+</dl></div>
+</figure>
+<figure>
+<figcaption class="ttl">第 4 種：先組框，腳在框轉角的內側</figcaption>
+<svg viewBox="0 0 420 285" role="img" aria-label="第 4 種：先組框，腳放在框轉角的內側，螺栓穿過框鎖進腳，兩個方向高度錯開"><path class="ir2" d="M125.1 142.5L143.1 142.5L143.1 120.9L125.1 120.9Z"/><path class="ie" d="M125.1 142.5L143.1 142.5L143.1 120.9L125.1 120.9Z"/><path class="ir2" d="M125.1 120.9L143.1 120.9L206.9 71L188.9 71Z"/><path class="sh0" d="M125.1 120.9L143.1 120.9L206.9 71L188.9 71Z"/><path class="ie" d="M125.1 120.9L143.1 120.9L206.9 71L188.9 71Z"/><path class="ir2" d="M143.1 142.5L206.9 92.6L206.9 71L143.1 120.9Z"/><path class="sh2" d="M143.1 142.5L206.9 92.6L206.9 71L143.1 120.9Z"/><path class="ie" d="M143.1 142.5L206.9 92.6L206.9 71L143.1 120.9Z"/><path class="iw" d="M143.1 256.5L175.5 256.5L175.5 120.9L143.1 120.9Z"/><path class="ie" d="M143.1 256.5L175.5 256.5L175.5 120.9L143.1 120.9Z"/><path class="iw" d="M143.1 120.9L175.5 120.9L184 114.2L151.6 114.2Z"/><path class="sh0" d="M143.1 120.9L175.5 120.9L184 114.2L151.6 114.2Z"/><path class="ie" d="M143.1 120.9L175.5 120.9L184 114.2L151.6 114.2Z"/><path class="iw" d="M175.5 256.5L184 249.8L184 114.2L175.5 120.9Z"/><path class="sh2" d="M175.5 256.5L184 249.8L184 114.2L175.5 120.9Z"/><path class="ie" d="M175.5 256.5L184 249.8L184 114.2L175.5 120.9Z"/><path class="ir" d="M118 148L298 148L298 126.4L118 126.4Z"/><path class="ie" d="M118 148L298 148L298 126.4L118 126.4Z"/><path class="ir" d="M118 126.4L298 126.4L305.1 120.9L125.1 120.9Z"/><path class="sh0" d="M118 126.4L298 126.4L305.1 120.9L125.1 120.9Z"/><path class="ie" d="M118 126.4L298 126.4L305.1 120.9L125.1 120.9Z"/><path class="ir" d="M298 148L305.1 142.5L305.1 120.9L298 126.4Z"/><path class="sh2" d="M298 148L305.1 142.5L305.1 120.9L298 126.4Z"/><path class="ie" d="M298 148L305.1 142.5L305.1 120.9L298 126.4Z"/><line class="hid" x1="127" y1="142.6" x2="144.7" y2="128.7"/><circle class="scrh" cx="127" cy="142.6" r="2.4"/><line class="hid" x1="127" y1="131.8" x2="144.7" y2="117.9"/><circle class="scrh" cx="127" cy="131.8" r="2.4"/><line class="hidb" x1="157" y1="140.8" x2="172.6" y2="128.6"/><circle class="bolth" cx="157" cy="140.8" r="3.6"/><line class="hidb" x1="129.3" y1="123.5" x2="179.7" y2="123.5"/><circle class="bolth" cx="129.3" cy="123.5" r="3.6"/><line class="ext" x1="274" y1="126.4" x2="332" y2="70"/><text class="lb" x="335" y="74" text-anchor="start">框的長邊</text><line class="ext" x1="190.8" y1="76.5" x2="170" y2="40"/><text class="lb" x="167" y="44" text-anchor="end">框的短邊</text><line class="ext" x1="184" y1="171.8" x2="250" y2="235"/><text class="lb" x="253" y="239" text-anchor="start">腳</text><text class="lbm" x="253" y="254" text-anchor="start">在框裡面</text></svg>
+<div class="info"><p>先組好方框，腳靠在框轉角的裡面，從框外鎖進腳。</p>
+<dl>
+<dt>誰這樣做</dt><dd><a href="https://www.buildeazy.com/workbench/">Buildeazy</a>（M10×110 馬車螺栓）、<a href="https://scottishmsa.org.uk/wp-content/uploads/2017/04/Family-Handyman-Workbench.pdf">Family Handyman（PDF）</a>（腳在框端料後面）、<a href="https://homeadditionplus.com/dev/more-diy-tips/how-to-build-a-workbench-out-of-2x4s-and-plywood/">HomeAdditionPlus</a>（半搭接）</dd>
+<dt>轉角螺絲</dt><dd>框的轉角螺絲在端料上，腳在端料後面，兩組分開。Buildeazy 的讀者回報只用 1 支螺栓腳會轉，改成 2 支。</dd>
+<dt>好處</dt><dd>可以先在地上組框、量對角線，再裝腳。</dd>
+<dt>要注意</dt><dd>框的轉角本身是兩支料對接，吃端面。</dd>
+<dt>能不能拆</dt><dd>螺栓版可以拆。</dd>
+</dl></div>
+</figure>
+<figure>
+<figcaption class="ttl">第 5 種：先組框，腳在框的外側</figcaption>
+<svg viewBox="0 0 420 285" role="img" aria-label="第 5 種：先組框，腳放在框的外側（你現在的木工桌）；組框螺絲和鎖腳螺絲都在長邊端頭同一段"><path class="ir2" d="M133.6 135.8L151.6 135.8L151.6 114.2L133.6 114.2Z"/><path class="ie" d="M133.6 135.8L151.6 135.8L151.6 114.2L133.6 114.2Z"/><path class="ir2" d="M133.6 114.2L151.6 114.2L206.9 71L188.9 71Z"/><path class="sh0" d="M133.6 114.2L151.6 114.2L206.9 71L188.9 71Z"/><path class="ie" d="M133.6 114.2L151.6 114.2L206.9 71L188.9 71Z"/><path class="ir2" d="M151.6 135.8L206.9 92.6L206.9 71L151.6 114.2Z"/><path class="sh2" d="M151.6 135.8L206.9 92.6L206.9 71L151.6 114.2Z"/><path class="ie" d="M151.6 135.8L206.9 92.6L206.9 71L151.6 114.2Z"/><path class="ir" d="M126.5 141.4L306.5 141.4L306.5 119.8L126.5 119.8Z"/><path class="ie" d="M126.5 141.4L306.5 141.4L306.5 119.8L126.5 119.8Z"/><path class="ir" d="M126.5 119.8L306.5 119.8L313.6 114.2L133.6 114.2Z"/><path class="sh0" d="M126.5 119.8L306.5 119.8L313.6 114.2L133.6 114.2Z"/><path class="ie" d="M126.5 119.8L306.5 119.8L313.6 114.2L133.6 114.2Z"/><path class="ir" d="M306.5 141.4L313.6 135.8L313.6 114.2L306.5 119.8Z"/><path class="sh2" d="M306.5 141.4L313.6 135.8L313.6 114.2L306.5 119.8Z"/><path class="ie" d="M306.5 141.4L313.6 135.8L313.6 114.2L306.5 119.8Z"/><path class="iw" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="ie" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="iw" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="sh0" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="ie" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="iw" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="sh2" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="ie" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><line class="hid" x1="135.5" y1="135.4" x2="153.2" y2="121.5"/><circle class="scrh" cx="135.5" cy="135.4" r="2.4"/><line class="hid" x1="158.8" y1="129.8" x2="146" y2="139.8"/><circle class="scrh" cx="158.8" cy="129.8" r="2.4"/><line class="hid" x1="135.5" y1="125.8" x2="153.2" y2="111.9"/><circle class="scrh" cx="135.5" cy="125.8" r="2.4"/><line class="hid" x1="158.8" y1="120.2" x2="146" y2="130.2"/><circle class="scrh" cx="158.8" cy="120.2" r="2.4"/><line class="ext" x1="282.5" y1="119.8" x2="332" y2="70"/><text class="lb" x="335" y="74" text-anchor="start">框的長邊</text><line class="ext" x1="190.8" y1="76.5" x2="170" y2="40"/><text class="lb" x="167" y="44" text-anchor="end">框的短邊</text><line class="ext" x1="143.3" y1="130.6" x2="100" y2="215"/><text class="lb" x="97" y="219" text-anchor="end">4 支擠在</text><text class="lbm" x="97" y="234" text-anchor="end">長邊端頭這一段</text></svg>
+<div class="info"><p>先組好日字框，腳貼在框的外側。這就是你現在的木工桌。</p>
+<dl>
+<dt>誰這樣做</dt><dd><a href="https://www.instructables.com/One-Hour-Workbench/">Instructables One Hour Workbench</a>（L 形腳包住轉角）、<a href="https://www.thisoldhouse.com/workshops/building-a-workbench">This Old House</a></dd>
+<dt>轉角螺絲</dt><dd>會擠：組框螺絲和鎖腳螺絲都在長邊端頭同一段。兩份教學都沒提這件事。</dd>
+<dt>好處</dt><dd>可以先在地上組框量方正。</dd>
+<dt>要注意</dt><dd>端頭那段同時被兩組螺絲吃，離端頭又近，容易裂。</dd>
+<dt>能不能拆</dt><dd>螺絲版拆幾次會鬆。</dd>
+</dl></div>
+</figure>
+<figure>
+<figcaption class="ttl">第 6 種：用五金件接</figcaption>
+<svg viewBox="0 0 420 285" role="img" aria-label="第 6 種：用五金件接，鐵件鎖在腳上，橫料坐進鐵件的座"><path class="iw" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="ie" d="M118 262L150.4 262L150.4 126.4L118 126.4Z"/><path class="iw" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="sh0" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="ie" d="M118 126.4L150.4 126.4L158.9 119.8L126.5 119.8Z"/><path class="iw" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="sh2" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="ie" d="M150.4 262L158.9 255.4L158.9 119.8L150.4 126.4Z"/><path class="im" d="M150.4 149.8L186.4 149.8L186.4 148L150.4 148Z"/><path class="ie" d="M150.4 149.8L186.4 149.8L186.4 148L150.4 148Z"/><path class="im" d="M150.4 148L186.4 148L194.9 141.4L158.9 141.4Z"/><path class="sh0" d="M150.4 148L186.4 148L194.9 141.4L158.9 141.4Z"/><path class="ie" d="M150.4 148L186.4 148L194.9 141.4L158.9 141.4Z"/><path class="im" d="M186.4 149.8L194.9 143.2L194.9 141.4L186.4 148Z"/><path class="sh2" d="M186.4 149.8L194.9 143.2L194.9 141.4L186.4 148Z"/><path class="ie" d="M186.4 149.8L194.9 143.2L194.9 141.4L186.4 148Z"/><path class="im" d="M150.4 148L151.6 148L151.6 126.4L150.4 126.4Z"/><path class="ie" d="M150.4 148L151.6 148L151.6 126.4L150.4 126.4Z"/><path class="im" d="M150.4 126.4L151.6 126.4L160.1 119.8L158.9 119.8Z"/><path class="sh0" d="M150.4 126.4L151.6 126.4L160.1 119.8L158.9 119.8Z"/><path class="ie" d="M150.4 126.4L151.6 126.4L160.1 119.8L158.9 119.8Z"/><path class="im" d="M151.6 148L160.1 141.4L160.1 119.8L151.6 126.4Z"/><path class="sh2" d="M151.6 148L160.1 141.4L160.1 119.8L151.6 126.4Z"/><path class="ie" d="M151.6 148L160.1 141.4L160.1 119.8L151.6 126.4Z"/><path class="ir" d="M152.3 147.4L298.7 147.4L298.7 125.8L152.3 125.8Z"/><path class="ie" d="M152.3 147.4L298.7 147.4L298.7 125.8L152.3 125.8Z"/><path class="ir" d="M152.3 125.8L298.7 125.8L305.8 120.3L159.4 120.3Z"/><path class="sh0" d="M152.3 125.8L298.7 125.8L305.8 120.3L159.4 120.3Z"/><path class="ie" d="M152.3 125.8L298.7 125.8L305.8 120.3L159.4 120.3Z"/><path class="ir" d="M298.7 147.4L305.8 141.9L305.8 120.3L298.7 125.8Z"/><path class="sh2" d="M298.7 147.4L305.8 141.9L305.8 120.3L298.7 125.8Z"/><path class="ie" d="M298.7 147.4L305.8 141.9L305.8 120.3L298.7 125.8Z"/><path class="im" d="M150.4 148L186.4 148L186.4 131.2L150.4 131.2Z"/><path class="ie" d="M150.4 148L186.4 148L186.4 131.2L150.4 131.2Z"/><path class="im" d="M150.4 131.2L186.4 131.2L186.9 130.8L150.9 130.8Z"/><path class="sh0" d="M150.4 131.2L186.4 131.2L186.9 130.8L150.9 130.8Z"/><path class="ie" d="M150.4 131.2L186.4 131.2L186.9 130.8L150.9 130.8Z"/><path class="im" d="M186.4 148L186.9 147.6L186.9 130.8L186.4 131.2Z"/><path class="sh2" d="M186.4 148L186.9 147.6L186.9 130.8L186.4 131.2Z"/><path class="ie" d="M186.4 148L186.9 147.6L186.9 130.8L186.4 131.2Z"/><circle class="scrh" cx="162.4" cy="139.6" r="2.2"/><circle class="scrh" cx="176.8" cy="139.6" r="2.2"/><line class="ext" x1="274.7" y1="125.8" x2="332" y2="70"/><text class="lb" x="335" y="74" text-anchor="start">橫料</text><line class="ext" x1="168.4" y1="143.2" x2="250" y2="235"/><text class="lb" x="253" y="239" text-anchor="start">鐵件</text><text class="lbm" x="253" y="254" text-anchor="start">短螺絲鎖側面</text></svg>
+<div class="info"><p>鐵件鎖在腳上，橫料坐進鐵件的座，再用短螺絲鎖住。</p>
+<dl>
+<dt>誰這樣做</dt><dd><a href="https://blog.strongtie.com/?p=1908">Simpson Strong-Tie 工作桌套件</a>（RTC2Z 鐵件，2×4 用）、Komeri 樹脂腳座（日本）</dd>
+<dt>轉角螺絲</dt><dd>螺絲都很短、都鎖側面，不鎖端面。</dd>
+<dt>好處</dt><dd>不用算角度、不用開榫，組裝快。</dd>
+<dt>要注意</dt><dd>鐵件是照 38 mm 厚的 2×4 做的，你的料是 36，要確認合不合；台灣買不買得到也要查。</dd>
+<dt>能不能拆</dt><dd>拆掉螺絲就能拆。</dd>
+</dl></div>
+</figure>
+  </div>
+  <p>整理下來，避開「同一處兩層螺絲」的做法主要有兩種：一是<b>短邊不要放在腳的位置</b>，挪到腳旁邊鎖在長邊上（第 3、4 種）；二是兩個方向非得鎖進同一支腳時，<b>上下錯開</b>（第 1 種）。</p>
+</section>
+
+<section>
+  <h2>接點用什麼鎖</h2>
+  <p>強度數字來自實際的破壞測試。Fine Woodworking 用櫻桃木、19 × 64 mm 的料測，Wandel 用雲杉測，兩邊的木頭和測法不同，數字不能直接互比，看排名就好。</p>
+  <div class="tw"><table class="cut"><thead><tr><th>鎖法</th><th>根據</th><th>能不能拆</th></tr></thead><tbody><tr><td>螺絲鎖進端面（從腳外側鎖進橫料端頭）</td><td>《Wood Handbook》：端面咬力平均約是側面的 75%。美國木結構規範 NDS 不允許木螺絲鎖端面。<a href="https://woodgears.ca/joint_strength/index.html">Wandel 接合強度測試</a>：雲杉測試，接點很早就開始被拉動，加華司才好一些。</td><td>可以，但孔會越拆越鬆</td></tr><tr><td>螺絲鎖進側面（橫料貼著腳）</td><td><a href="https://woodgears.ca/workbench/index.html">Matthias Wandel 工作桌</a>用在工作桌長邊，說垂直重量只靠螺絲就撐得住。</td><td>可以，一樣會越拆越鬆</td></tr><tr><td>斜孔螺絲</td><td><a href="https://www.finewoodworking.com/2009/01/01/joinery-shootout">Fine Woodworking 接合強度比較（2009）</a>：櫻桃木測試，比單純上膠的對接強（317 kgf 對 215 kgf）。<a href="https://woodgears.ca/joint_strength/pockethole.html">Wandel 斜孔螺絲測試</a>：雲杉測試，在幾種接法裡偏弱，約 23 kgf 就開始裂開縫。Kreg：36 mm 厚的料用 64 mm（2-1/2"）螺絲。</td><td>有限度可以</td></tr><tr><td>半搭接、缺口</td><td><a href="https://www.finewoodworking.com/2009/01/01/joinery-shootout">Fine Woodworking 接合強度比較（2009）</a>：18 種接法第一名（727 kgf）。</td><td>不上膠就可以</td></tr><tr><td>榫接</td><td><a href="https://www.finewoodworking.com/2009/01/01/joinery-shootout">Fine Woodworking 接合強度比較（2009）</a>：3/8" 榫 655 kgf，排前三名。</td><td>不行（插銷不上膠的版本可以）</td></tr><tr><td>螺栓（馬車螺栓、床栓、桶形螺帽）</td><td><a href="https://www.woodcraft.com/blogs/cabinetry-furniture-making/knock-down-workbench">Woodcraft 可拆工作桌</a>、<a href="https://blog.lostartpress.com/wp-content/uploads/2011/03/wb-chapter9-appendixr2.pdf">Lost Art Press 可拆工作桌附錄（PDF）</a>、<a href="https://images.finewoodworking.com/app/uploads/2007/03/27164735/Basic_Workbench_Plans.pdf">Woodsmith Basic Workbench（PDF）</a> 都用在可拆工作桌。鬆了可以再鎖緊。Woodcraft：只用 1 支擋不住晃，要 2 支或加定位榫。</td><td>可以</td></tr></tbody></table></div>
+</section>
+
+<section>
+  <h2>距離和咬力的數字</h2>
+  <p>規範是寫給房屋結構用的，桌子受力小很多，拿來當「至少不要比這個近」的參考。</p>
+  <div class="tw"><table class="cut"><thead><tr><th>項目</th><th>數字</th><th>來源</th></tr></thead><tbody><tr><td>螺絲鎖端面的咬力</td><td>平均約是側面的 75%</td><td><a href="https://research.fs.usda.gov/download/treesearch/62200.pdf">美國林產品實驗室《Wood Handbook》（2021，PDF）</a> 第 8-11 頁</td></tr><tr><td>木螺絲鎖端面</td><td>美國木結構設計規範不允許</td><td><a href="https://iccsafe.org/?p=524777">ICC 對 NDS 的說明</a></td></tr><tr><td>橫向受力的螺絲，離端頭</td><td>不少於前面那塊的厚度。你的長邊 30 厚，就是 30</td><td><a href="https://research.fs.usda.gov/download/treesearch/62200.pdf">美國林產品實驗室《Wood Handbook》（2021，PDF）</a> 第 8-11 頁</td></tr><tr><td>橫向受力的螺絲，吃進後面那塊</td><td>至少螺絲身直徑的 7 倍。4 mm 螺絲約 28</td><td><a href="https://research.fs.usda.gov/download/treesearch/62200.pdf">美國林產品實驗室《Wood Handbook》（2021，PDF）</a> 第 8-11 頁</td></tr><tr><td>有預鑽孔，離端頭（不受力那端）</td><td>7 倍直徑。4 mm 螺絲 28</td><td>歐洲木結構規範 EN 1995-1-1 表 8.2</td></tr><tr><td>有預鑽孔，沿木紋兩孔間距</td><td>約 5 倍直徑。4 mm 螺絲 20</td><td>歐洲木結構規範 EN 1995-1-1 表 8.2</td></tr><tr><td>螺栓離端頭（軟木，受拉）</td><td>7 倍直徑。M8 是 56、M10 是 70</td><td><a href="https://research.fs.usda.gov/download/treesearch/62200.pdf">美國林產品實驗室《Wood Handbook》（2021，PDF）</a> 第 8-16 頁</td></tr><tr><td>可拆工作桌的螺帽孔離端頭</td><td>89 mm（3-1/2"），再近端頭會被撐裂</td><td><a href="https://www.woodcraft.com/blogs/cabinetry-furniture-making/knock-down-workbench">Woodcraft 可拆工作桌</a>、<a href="https://blog.lostartpress.com/wp-content/uploads/2011/03/wb-chapter9-appendixr2.pdf">Lost Art Press 可拆工作桌附錄（PDF）</a></td></tr><tr><td>兩方向鎖進同一支腳的錯開量</td><td>11 mm（7/16"）</td><td><a href="https://images.finewoodworking.com/app/uploads/2021/07/07185858/Simple-Sturdy-Workbench_FINAL.pdf">FWW Simple, Sturdy Workbench（PDF）</a></td></tr></tbody></table></div>
+</section>
+
+<section>
+  <h2>論壇上大多數人同意的</h2>
+  <ul class="list"><li><b>一個接點只鎖 1 支會轉。</b>要 2 個以上固定點，或加膠。（<a href="https://woodworking.stackexchange.com/questions/15478/making-wobbly-6x4-table-stable">Stack Exchange：桌子會晃</a>、<a href="https://www.ukworkshop.co.uk/threads/sellers-inspired-workbench.140125/">UKWorkshop：工作桌一直晃</a>、<a href="https://www.buildeazy.com/workbench/">Buildeazy</a> 讀者回報）</li><li><b>螺絲不要排在同一條木紋上，也不要太靠近端頭，斜對角排比較好。</b>（<a href="https://www.ukworkshop.co.uk/threads/what-is-the-name-and-optimal-screw-placement-for-this-common-workbench-leg-setup.146914/">UKWorkshop：工作桌腳的螺絲位置</a>）日本 DIY 部落格的做法是兩面「對角に２本ずつ」，也是把螺絲斜著錯開。</li><li><b>兩個方向的螺絲擠在同一個角，錯開的效果「時好時壞」。</b>回覆的解法：加三角角塊、改用木榫、用粗一點的料。（<a href="https://www.physicsforums.com/threads/how-can-i-economically-join-3-way-corners-in-open-boxes-without-screws-crossing.1063306/">Physics Forums：三向轉角螺絲交叉</a>）</li><li><b>兩個方向的榫頭也一樣，錯開比讓它們碰在一起強。</b>（<a href="https://finewoodworking.com/forum/looking-for-help-with-leg-to-apron-joinery">Fine Woodworking 論壇：腳和牙板的接法</a>）</li><li><b>會不會晃，主要看有沒有三角支撐。</b>斜撐、背板、層板，或桌面鎖得夠牢都算。有人在晃的工作桌臨時斜塞一支 2×4 就不晃了。（<a href="https://www.woodtalkonline.com/topic/5522-how-to-fixlevel-a-wobbling-workbench/">WoodTalk：工作桌晃</a>、<a href="https://www.woodcentral.com/forums/topic/3078314/workbench-base">WoodCentral：工作桌底座</a>、Sawmill Creek）</li><li><b>軟木會壓縮、收縮，螺絲久了會鬆。</b>想鬆了能再鎖緊、或要拆，多數人建議用螺栓。（WoodTalk、ClassicMotorsports、<a href="https://sawmillcreek.org/threads/best-way-to-reinforce-table-base-made-with-2x4-legs.294106/">Sawmill Creek：2x4 桌腳補強</a>）</li><li><b>靠近端頭鎖螺絲要先鑽導孔，最外面那支常常就是裂開的那支。</b>（<a href="https://sawmillcreek.org/threads/how-to-stop-wood-from-splitting.301753/">Sawmill Creek：螺絲讓料裂開</a>、<a href="https://scottishmsa.org.uk/wp-content/uploads/2017/04/Family-Handyman-Workbench.pdf">Family Handyman（PDF）</a>：「靠近 2×4 端頭要先鑽 1/8" 孔，免得裂開」）</li><li><b>用桶形螺帽、床栓時要加短榫定位，螺栓孔鑽大一點。</b>（<a href="https://benchcrafted.blogspot.com/2015/02/how-to-install-barrel-nuts.html">Benchcrafted 桶形螺帽安裝</a>、Fine Woodworking 論壇）</li></ul>
+</section>
+
+<section>
+  <h2>套回你的木工桌</h2>
+  <p>你的木工桌是第 5 種。長邊端頭這一段（腳寬 54）同時有 4 支螺絲：</p>
+  <figure><svg viewBox="0 0 720 262" role="img" aria-label="你的木工桌長邊端頭：組框螺絲在離端頭 15、鎖腳螺絲在 42，都在框底起 10 和 26 兩個高度；建議離端頭 30 以內不要鎖"><rect class="rail2s" x="60" y="82" width="450" height="108"/><rect class="bracel" x="60" y="82" width="90" height="108"/><rect class="warn" x="60" y="82" width="90" height="108"/><rect class="legs" x="60" y="64" width="162" height="144"/><circle class="h1" cx="105" cy="160" r="6"/><circle class="h1" cx="105" cy="112" r="6"/><circle class="h2" cx="186" cy="160" r="6"/><circle class="h2" cx="186" cy="112" r="6"/><line class="dim" x1="60" y1="52" x2="105" y2="52"/><line class="ext" x1="60" y1="46" x2="60" y2="58"/><line class="ext" x1="105" y1="46" x2="105" y2="58"/><text class="dimt" x="82.5" y="47" text-anchor="middle">15</text><line class="dim" x1="60" y1="30" x2="186" y2="30"/><line class="ext" x1="60" y1="24" x2="60" y2="36"/><line class="ext" x1="186" y1="24" x2="186" y2="36"/><text class="dimt" x="123" y="25" text-anchor="middle">42</text><line class="dim" x1="60" y1="230" x2="150" y2="230"/><line class="ext" x1="60" y1="224" x2="60" y2="236"/><line class="ext" x1="150" y1="224" x2="150" y2="236"/><text class="dimt" x="105" y="225" text-anchor="middle">30：離端頭這段不要鎖</text><text class="lb" x="540" y="116">實心圈：組框螺絲（鎖進短撐）</text><text class="lb" x="540" y="164">空心圈：鎖腳螺絲（鎖進腳）</text><text class="lbm" x="60" y="260">從框外面看長邊端頭。虛線框是腳，左邊 30 寬是後面的短撐，也是《Wood Handbook》建議不要鎖的範圍（紅底）。</text><text class="dimt" x="52" y="116" text-anchor="end">26</text><text class="dimt" x="52" y="164" text-anchor="end">10</text></svg><figcaption>組框那 2 支離端頭 15，比《Wood Handbook》建議的 30、歐洲規範的 28 都近；4 支只在 10、26 兩個高度，兩兩排在同一條木紋上，正好是論壇說不要的排法。</figcaption></figure>
+  <p>照上面的整理，可以往這三個方向改（這段是我根據上面的資料推的，還沒有算孔位）：</p>
+  <ul class="list">
+    <li><b>短撐挪到腳旁邊</b>：照第 3、4 種，兩端短撐離開腳的範圍，長邊端頭只剩鎖腳的螺絲。結構改最少。</li>
+    <li><b>改成腳當轉角</b>：第 1 種。長邊、短邊鎖在腳的兩個面，螺絲上下錯開；要處理吃端面的問題，用斜孔螺絲或螺栓。</li>
+    <li><b>要拆的話用螺栓</b>：參考第 2 種 PracticalDIY 每角 2 支斜對角。螺栓離端頭的距離要另外算。</li>
+  </ul>
+  <p class="note">結構還沒定，木工桌施工圖先不動。</p>
+</section>
+
+<section>
+  <h2>來源</h2>
+  <ul class="list src"><li><a href="https://ana-white.com/woodworking-projects/build-your-first-workbench-free-beginners-guide-plans">Ana White 新手工作桌</a></li><li><a href="https://www.ana-white.com/woodworking-projects/easy-diy-garage-workshop-workbench">Ana White 車庫工作桌</a></li><li><a href="https://sawsonskates.com/diy-2x4-workbench-plans/">Saws on Skates</a></li><li><a href="https://learn.kregtool.com/plans/diy-workbench/">Kreg DIY Workbench</a></li><li><a href="https://fixthisbuildthat.com/how-to-build-a-sturdy-workbench-using-cheap-wood/">Fix This Build That</a></li><li><a href="https://images.finewoodworking.com/app/uploads/2007/03/27164735/Basic_Workbench_Plans.pdf">Woodsmith Basic Workbench（PDF）</a></li><li><a href="https://images.finewoodworking.com/app/uploads/2021/07/07185858/Simple-Sturdy-Workbench_FINAL.pdf">FWW Simple, Sturdy Workbench（PDF）</a></li><li><a href="https://woodgears.ca/workbench/index.html">Matthias Wandel 工作桌</a></li><li><a href="https://www.practicaldiy.com/carpentry/plans/work-bench/work-bench.php">PracticalDIY</a></li><li><a href="https://www.buildeazy.com/workbench/">Buildeazy</a></li><li><a href="https://scottishmsa.org.uk/wp-content/uploads/2017/04/Family-Handyman-Workbench.pdf">Family Handyman（PDF）</a></li><li><a href="https://homeadditionplus.com/dev/more-diy-tips/how-to-build-a-workbench-out-of-2x4s-and-plywood/">HomeAdditionPlus</a></li><li><a href="https://www.instructables.com/One-Hour-Workbench/">Instructables One Hour Workbench</a></li><li><a href="https://www.thisoldhouse.com/workshops/building-a-workbench">This Old House</a></li><li><a href="https://blog.strongtie.com/?p=1908">Simpson Strong-Tie 工作桌套件</a></li><li><a href="https://www.woodcraft.com/blogs/cabinetry-furniture-making/knock-down-workbench">Woodcraft 可拆工作桌</a></li><li><a href="https://blog.lostartpress.com/wp-content/uploads/2011/03/wb-chapter9-appendixr2.pdf">Lost Art Press 可拆工作桌附錄（PDF）</a></li><li><a href="https://benchcrafted.blogspot.com/2015/02/how-to-install-barrel-nuts.html">Benchcrafted 桶形螺帽安裝</a></li><li><a href="https://research.fs.usda.gov/download/treesearch/62200.pdf">美國林產品實驗室《Wood Handbook》（2021，PDF）</a></li><li><a href="https://iccsafe.org/?p=524777">ICC 對 NDS 的說明</a></li><li><a href="https://woodgears.ca/joint_strength/index.html">Wandel 接合強度測試</a></li><li><a href="https://woodgears.ca/joint_strength/pockethole.html">Wandel 斜孔螺絲測試</a></li><li><a href="https://www.finewoodworking.com/2009/01/01/joinery-shootout">Fine Woodworking 接合強度比較（2009）</a></li><li><a href="https://www.physicsforums.com/threads/how-can-i-economically-join-3-way-corners-in-open-boxes-without-screws-crossing.1063306/">Physics Forums：三向轉角螺絲交叉</a></li><li><a href="https://www.ukworkshop.co.uk/threads/what-is-the-name-and-optimal-screw-placement-for-this-common-workbench-leg-setup.146914/">UKWorkshop：工作桌腳的螺絲位置</a></li><li><a href="https://www.ukworkshop.co.uk/threads/sellers-inspired-workbench.140125/">UKWorkshop：工作桌一直晃</a></li><li><a href="https://woodworking.stackexchange.com/questions/15478/making-wobbly-6x4-table-stable">Stack Exchange：桌子會晃</a></li><li><a href="https://sawmillcreek.org/threads/best-way-to-reinforce-table-base-made-with-2x4-legs.294106/">Sawmill Creek：2x4 桌腳補強</a></li><li><a href="https://sawmillcreek.org/threads/how-to-stop-wood-from-splitting.301753/">Sawmill Creek：螺絲讓料裂開</a></li><li><a href="https://www.woodtalkonline.com/topic/5522-how-to-fixlevel-a-wobbling-workbench/">WoodTalk：工作桌晃</a></li><li><a href="https://www.woodcentral.com/forums/topic/3078314/workbench-base">WoodCentral：工作桌底座</a></li><li><a href="https://finewoodworking.com/forum/looking-for-help-with-leg-to-apron-joinery">Fine Woodworking 論壇：腳和牙板的接法</a></li></ul>
+  <p class="note">論壇的引述都是使用者個人經驗，不是正式規範。強度數字照原文換算成 kgf（1 lb ≈ 0.4536 kgf）。</p>
+</section>
+</div>
+</body>
+</html>
