@@ -130,7 +130,7 @@
 
     // 標籤：3D 點投影到畫面上
     var labs = (data.labels || []).map(function (l) {
-      var d = document.createElement('div'); d.className = 'lab';
+      var d = document.createElement('div'); d.className = 'lab' + (l.side ? ' ' + l.side : '');
       d.innerHTML = l.t + (l.sub ? '<small>' + l.sub + '</small>' : '');
       el.appendChild(d);
       return { el: d, p: V(l.p) };
