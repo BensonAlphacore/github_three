@@ -113,6 +113,11 @@
       scene.add(g);
       movers.push({ g: g, b: b, dir: dir });
     });
+    var holeMat = new T.MeshBasicMaterial({ color: 0x15191b });
+    (data.holes || []).forEach(function (s) {           // 沉孔：頂面看得到的深色圓孔
+      var g = new T.Mesh(new T.CylinderGeometry(s.r, s.r, s.h, 32), holeMat);
+      var p = V(s.p); g.position.set(p.x, p.y - s.h / 2 + 0.3, p.z); scene.add(g);
+    });
     (data.inserts || []).forEach(function (s) {
       var g = insert(s.h, s.r); g.position.copy(V(s.p)); scene.add(g);
     });
@@ -129,21 +134,37 @@
     controls.target.copy(c); controls.update();
 
     // 標籤：3D 點投影到畫面上
+    // 標籤：每次重畫都從轉角的中心往外推，再用引線拉回指的位置，才不會蓋住接頭
+    var jc = c.clone();
+    if (movers.length) { jc.set(0, 0, 0); movers.forEach(function (m) { jc.add(m.b); }); jc.divideScalar(movers.length); }
+    var NS = 'http://www.w3.org/2000/svg', lead = document.createElementNS(NS, 'svg');
+    lead.setAttribute('class', 'lead'); el.appendChild(lead);
     var labs = (data.labels || []).map(function (l) {
-      var d = document.createElement('div'); d.className = 'lab' + (l.side ? ' ' + l.side : '');
+      var d = document.createElement('div'); d.className = 'lab';
       d.innerHTML = l.t + (l.sub ? '<small>' + l.sub + '</small>' : '');
       el.appendChild(d);
-      return { el: d, p: V(l.p) };
+      var ln = document.createElementNS(NS, 'line'); lead.appendChild(ln);
+      return { el: d, ln: ln, p: V(l.p) };
     });
+    function scr(v, w, h) { var q = v.clone().project(cam); return { x: (q.x + 1) / 2 * w, y: (1 - q.y) / 2 * h, z: q.z }; }
     function render() {
       renderer.render(scene, cam);
-      var w = el.clientWidth, h = el.clientHeight;
+      var w = el.clientWidth, h = el.clientHeight, C = scr(jc, w, h);
+      lead.setAttribute('width', w); lead.setAttribute('height', h);
       labs.forEach(function (l) {
-        var q = l.p.clone().project(cam);
-        var vis = q.z < 1 && q.x > -1.1 && q.x < 1.1 && q.y > -1.1 && q.y < 1.1;
+        var A = scr(l.p, w, h), dx = A.x - C.x, dy = A.y - C.y, n = Math.hypot(dx, dy);
+        var push = 34;
+        if (n < 25) { dx = -1; dy = 0.55; n = Math.hypot(dx, dy); push = 70; }   // 標籤就在轉角正中間：往左下推遠一點
+        dx /= n; dy /= n;
+        var bw = l.el.offsetWidth / 2 + 6, bh = l.el.offsetHeight / 2 + 6;
+        var Lx = Math.max(bw, Math.min(w - bw, A.x + dx * (bw + push)));
+        var Ly = Math.max(bh, Math.min(h - bh - 40, A.y + dy * (bh + push)));
+        var vis = A.z < 1 && A.x > -20 && A.x < w + 20 && A.y > -20 && A.y < h + 20;
         l.el.style.display = vis ? '' : 'none';
-        l.el.style.left = ((q.x + 1) / 2 * w) + 'px';
-        l.el.style.top = ((1 - q.y) / 2 * h) + 'px';
+        l.ln.style.display = vis ? '' : 'none';
+        l.el.style.left = Lx + 'px'; l.el.style.top = Ly + 'px';
+        l.ln.setAttribute('x1', A.x); l.ln.setAttribute('y1', A.y);
+        l.ln.setAttribute('x2', Lx); l.ln.setAttribute('y2', Ly);
       });
     }
     controls.addEventListener('change', render);
