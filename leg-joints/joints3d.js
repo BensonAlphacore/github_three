@@ -88,7 +88,7 @@
     var dl = new T.DirectionalLight(0xffffff, 0.85); dl.position.set(-250, 420, 380); scene.add(dl);
     var dl2 = new T.DirectionalLight(0xffffff, 0.3); dl2.position.set(300, 150, -200); scene.add(dl2);
 
-    var woodCol = { leg: cssv('--leg', '#c79a5e'), rail: cssv('--rail', '#e0cf8c'), rail2: cssv('--rail2', '#cdb86e') };
+    var woodCol = { leg: cssv('--leg', '#c79a5e'), rail: cssv('--rail', '#e0cf8c'), rail2: cssv('--rail2', '#cdb86e'), ply: cssv('--ply', '#dcbd86') };
     var woods = [], box3 = new T.Box3();
     var edgeMat = new T.LineBasicMaterial({ color: new T.Color(cssv('--ink', '#1c2523')), transparent: true, opacity: 0.55 });
     data.boxes.forEach(function (b) {
@@ -126,10 +126,11 @@
     var c = box3.getCenter(new T.Vector3()), R = box3.getSize(new T.Vector3()).length() / 2;
     if (movers.length) {
       var sc = new T.Vector3(); movers.forEach(function (m) { sc.add(m.b); }); sc.divideScalar(movers.length);
-      c.lerp(sc, 0.6);
+      c.lerp(sc, data.view && data.view.lerp != null ? data.view.lerp : 0.6);
     }
     var cam = new T.PerspectiveCamera(30, W / H, 1, 8000);
-    cam.position.copy(c.clone().add(new T.Vector3(-0.62, 0.55, 0.85).normalize().multiplyScalar(R * 2.6)));
+    var vd = (data.view && data.view.dir) || [-0.62, 0.55, 0.85];
+    cam.position.copy(c.clone().add(new T.Vector3(vd[0], vd[1], vd[2]).normalize().multiplyScalar(R * (data.view && data.view.dist || 2.6))));
     var controls = new T.OrbitControls(cam, renderer.domElement);
     controls.target.copy(c); controls.update();
 
