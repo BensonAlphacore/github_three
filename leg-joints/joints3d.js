@@ -89,7 +89,8 @@
     var dl2 = new T.DirectionalLight(0xffffff, 0.3); dl2.position.set(300, 150, -200); scene.add(dl2);
 
     var woodCol = { leg: cssv('--leg', '#c79a5e'), rail: cssv('--rail', '#e0cf8c'), rail2: cssv('--rail2', '#cdb86e'), ply: cssv('--ply', '#dcbd86') };
-    var woods = [], box3 = new T.Box3();
+    var woods = [], box3 = new T.Box3(), parts = [];
+    function EX(e) { return e ? new T.Vector3(e[0], e[2], -e[1]) : null; }
     var edgeMat = new T.LineBasicMaterial({ color: new T.Color(cssv('--ink', '#1c2523')), transparent: true, opacity: 0.55 });
     data.boxes.forEach(function (b) {
       var k = b[0], x0 = b[1], x1 = b[2], y0 = b[3], y1 = b[4], z0 = b[5], z1 = b[6];
@@ -101,6 +102,7 @@
       mesh.position.set((x0 + x1) / 2, (z0 + z1) / 2, -(y0 + y1) / 2);
       scene.add(mesh);
       var e = new T.LineSegments(new T.EdgesGeometry(geo), edgeMat); e.position.copy(mesh.position); scene.add(e);
+      if (b[7]) parts.push({ objs: [mesh, e], base: mesh.position.clone(), ex: EX(b[7]) });
       box3.expandByObject(mesh);
     });
 
@@ -111,7 +113,7 @@
       g.quaternion.setFromUnitVectors(up, dir);
       g.position.copy(b);
       scene.add(g);
-      movers.push({ g: g, b: b, dir: dir });
+      movers.push({ g: g, b: b, dir: dir, ex: EX(s.ex) });
     });
     var holeMat = new T.MeshBasicMaterial({ color: 0x15191b });
     (data.holes || []).forEach(function (s) {           // 沉孔：頂面看得到的深色圓孔
@@ -133,6 +135,19 @@
     cam.position.copy(c.clone().add(new T.Vector3(vd[0], vd[1], vd[2]).normalize().multiplyScalar(R * (data.view && data.view.dist || 2.6))));
     var controls = new T.OrbitControls(cam, renderer.domElement);
     controls.target.copy(c); controls.update();
+    // 拆開時的取景：把每塊移開後的範圍算進來，拆開時鏡頭跟著退遠
+    var cE = c.clone(), kE = 1;
+    if (parts.length) {
+      var bx = new T.Box3();
+      data.boxes.forEach(function (b) {
+        var e = b[7] || [0, 0, 0];
+        bx.expandByPoint(V([b[1] + e[0], b[3] + e[1], b[5] + e[2]]));
+        bx.expandByPoint(V([b[2] + e[0], b[4] + e[1], b[6] + e[2]]));
+      });
+      cE = bx.getCenter(new T.Vector3());
+      kE = Math.max(1, bx.getSize(new T.Vector3()).length() / 2 / R) * 1.15;
+    }
+    var d0 = cam.position.distanceTo(c);
 
     // 標籤：3D 點投影到畫面上
     // 標籤：每次重畫都從轉角的中心往外推，再用引線拉回指的位置，才不會蓋住接頭
@@ -145,7 +160,7 @@
       d.innerHTML = l.t + (l.sub ? '<small>' + l.sub + '</small>' : '');
       el.appendChild(d);
       var ln = document.createElementNS(NS, 'line'); lead.appendChild(ln);
-      return { el: d, ln: ln, p: V(l.p) };
+      return { el: d, ln: ln, p0: V(l.p), p: V(l.p), ex: EX(l.ex) };
     });
     function scr(v, w, h) { var q = v.clone().project(cam); return { x: (q.x + 1) / 2 * w, y: (1 - q.y) / 2 * h, z: q.z }; }
     function render() {
@@ -183,7 +198,15 @@
       (function step(t) {
         var k = Math.min(1, (t - t0) / 450), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         pulled = from + (to - from) * e;
-        movers.forEach(function (m) { m.g.position.copy(m.b).addScaledVector(m.dir, pulled * 55); });
+        movers.forEach(function (m) { m.g.position.copy(m.b).addScaledVector(m.dir, pulled * 55); if (m.ex) m.g.position.addScaledVector(m.ex, pulled); });
+        parts.forEach(function (p) { p.objs.forEach(function (o) { o.position.copy(p.base).addScaledVector(p.ex, pulled); }); });
+        if (parts.length) {
+          var dirc = cam.position.clone().sub(controls.target).normalize();
+          controls.target.copy(c).lerp(cE, pulled);
+          cam.position.copy(controls.target).addScaledVector(dirc, d0 * (1 + (kE - 1) * pulled));
+          controls.update();
+        }
+        labs.forEach(function (l) { l.p.copy(l.p0); if (l.ex) l.p.addScaledVector(l.ex, pulled); });
         render();
         if (k < 1) anim = requestAnimationFrame(step);
       })(t0);
@@ -191,7 +214,7 @@
     el.querySelectorAll('button[data-act]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         if (btn.dataset.act === 'solid') { setSee(!see); btn.textContent = see ? '實心' : '透明'; }
-        else { var to = pulled > 0.5 ? 0 : 1; pull(to); btn.textContent = to ? '裝回去' : '拉開螺絲'; }
+        else { var to = pulled > 0.5 ? 0 : 1; pull(to); btn.textContent = to ? '裝回去' : (btn.dataset.t || '拉開螺絲'); }
       });
     });
     window.addEventListener('resize', function () {
