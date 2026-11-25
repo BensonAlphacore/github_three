@@ -58,8 +58,14 @@
     var g = new T.Group(), r = d / 2, ext = nut ? d * 1.1 : 0;
     var sh = new T.Mesh(new T.CylinderGeometry(r * 0.9, r * 0.9, len + ext, 20), MAT.zinc); sh.position.y = (len - ext) / 2; g.add(sh);
     g.add(new T.Mesh(helix(r * 0.94, -ext + 0.5, Math.min(len * 0.45, len - 2), d * 0.15, d * 0.085), MAT.zinc));
-    var w = washer(d); w.position.y = len + 0.8; g.add(w);
-    var hd = hexm(d, d * 0.65); hd.position.y = len + 1.6 + d * 0.33; g.add(hd);
+    if (nut) {                                   // 馬車螺栓：圓頂頭直接貼木頭（不墊華司），頭下方頸敲進孔裡卡住不轉
+      var dome = new T.Mesh(new T.SphereGeometry(d * 1.15, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), MAT.zinc);
+      dome.scale.y = 0.42; dome.position.y = len; g.add(dome);
+      var neck = new T.Mesh(new T.BoxGeometry(d, d * 0.9, d), MAT.zinc); neck.position.y = len - d * 0.45; g.add(neck);
+    } else {                                     // 一般六角螺栓（鎖進預埋螺帽）
+      var w = washer(d); w.position.y = len + 0.8; g.add(w);
+      var hd = hexm(d, d * 0.65); hd.position.y = len + 1.6 + d * 0.33; g.add(hd);
+    }
     return g;
   }
   // 預埋螺帽：外面有粗牙的銅色短管
