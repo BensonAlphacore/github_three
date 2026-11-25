@@ -60,10 +60,6 @@
     g.add(new T.Mesh(helix(r * 0.94, -ext + 0.5, Math.min(len * 0.45, len - 2), d * 0.15, d * 0.085), MAT.zinc));
     var w = washer(d); w.position.y = len + 0.8; g.add(w);
     var hd = hexm(d, d * 0.65); hd.position.y = len + 1.6 + d * 0.33; g.add(hd);
-    if (nut) {
-      var w2 = washer(d); w2.position.y = -0.8; g.add(w2);
-      var n = hexm(d, d * 0.8); n.position.y = -1.6 - d * 0.4; g.add(n);
-    }
     return g;
   }
   // 預埋螺帽：外面有粗牙的銅色短管
@@ -114,6 +110,13 @@
       g.position.copy(b);
       scene.add(g);
       movers.push({ g: g, b: b, dir: dir, ex: EX(s.ex) });
+      if (s.bolt && s.nut) {                       // 螺帽和華司另外一組：拉開時從另一頭往反方向退出來
+        var d2 = s.d || 10, ng = new T.Group();
+        var w2 = washer(d2); w2.position.y = -0.8; ng.add(w2);
+        var n2 = hexm(d2, d2 * 0.8); n2.position.y = -1.6 - d2 * 0.4; ng.add(n2);
+        ng.quaternion.copy(g.quaternion); ng.position.copy(b); scene.add(ng);
+        movers.push({ g: ng, b: b.clone(), dir: dir.clone().negate(), ex: EX(s.ex) });
+      }
     });
     var holeMat = new T.MeshBasicMaterial({ color: 0x15191b });
     (data.holes || []).forEach(function (s) {           // 沉孔：頂面看得到的深色圓孔
